@@ -2,21 +2,40 @@
 import { useRouter } from 'vue-router'
 import Navbar from '../navbar.vue'
 import { ref } from 'vue'
+import axios from 'axios'
 
 const otp = ref('')
 const router = useRouter()
-const handleSubmit = () => {
+
+const handleSubmit = async () => {
   if (!otp.value) {
     alert('Please fill in all fields.')
     return
   }
 
-  console.log('OTP:', otp.value)
+  try {
+    const email = localStorage.getItem('email') 
 
-  otp.value = ''
-  router.push('/')
+    const response = await axios.post('http://localhost:3000/user/register/verify', {
+      email: email,
+      otp: otp.value,
+    })
+
+    if (response.data.message === 'User registered successfully') {
+      alert('OTP verification successful!')
+      router.push('/')
+    } else {
+      alert('OTP verification failed. Please try again.')
+    }
+  } catch (error) {
+    console.error('Error during OTP verification:', error)
+    alert('OTP verification failed. Please try again.')
+  } finally {
+    otp.value = ''
+  }
 }
 </script>
+
 <template>
   <Navbar />
   <div class="flex justify-center items-center min-h-screen bg-gray-200">
@@ -24,12 +43,12 @@ const handleSubmit = () => {
       <h1 class="text-2xl font-bold mb-8 text-center">Enter OTP</h1>
       <input
         v-model="otp"
-        type="otp"
+        type="text"
         placeholder="Enter OTP"
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
       />
       <button
-      @click="handleSubmit"
+        @click="handleSubmit"
         type="submit"
         class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
       >

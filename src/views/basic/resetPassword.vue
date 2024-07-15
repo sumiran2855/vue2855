@@ -1,20 +1,34 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import Navbar from '../navbar.vue'
 import { ref } from 'vue'
+import axios from 'axios'
 
 const newPassword = ref('')
 const router = useRouter()
-const handleSubmit = () => {
+const route = useRoute()
+const handleSubmit = async () => {
   if (!newPassword.value) {
     alert('Please fill in all fields.')
     return
   }
 
-  console.log('OTP:', newPassword.value)
+  const token = route.query.token
 
-  newPassword.value = ''
-  router.push('/login')
+  try {
+    const response = await axios.post('http://localhost:3000/auth/reset-password', {
+      token,
+      newPassword: newPassword.value
+    })
+
+    alert(response.data.message)
+    router.push('/login')
+  } catch (error) {
+    console.error('Error during password reset:', error)
+    alert('Failed to reset password. Please try again.')
+  } finally {
+    newPassword.value = ''
+  }
 }
 </script>
 <template>
@@ -24,12 +38,12 @@ const handleSubmit = () => {
       <h1 class="text-2xl font-bold mb-8 text-center">Reset Password</h1>
       <input
         v-model="newPassword"
-        type="otp"
+        type="password"
         placeholder="Enter new Password"
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
       />
       <button
-      @click="handleSubmit"
+        @click="handleSubmit"
         type="submit"
         class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
       >

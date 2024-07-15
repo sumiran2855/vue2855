@@ -2,6 +2,7 @@
 import Navbar from './navbar.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const username = ref('')
 const email = ref('')
@@ -10,7 +11,7 @@ const termsAccepted = ref(false)
 
 const router = useRouter()
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!username.value || !email.value || !password.value) {
     alert('Please fill in all fields.')
     return
@@ -21,18 +22,27 @@ const handleSubmit = () => {
     return
   }
 
-  console.log('Username:', username.value)
-  console.log('Email:', email.value)
-  console.log('Password:', password.value)
+  try {
+    const response = await axios.post('http://localhost:3000/user/register', {
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    })
+    console.log('Registration successful:', response.data)
 
-  username.value = ''
-  email.value = ''
-  password.value = ''
+    username.value = ''
+    email.value = ''
+    password.value = ''
 
-  // Redirect to login page (example)
-  router.push('/otp')
+    // Redirect to OTP page 
+    router.push('/registerOTP')
+  } catch (error) {
+    console.error('Error during registration:', error)
+    alert('Registration failed. Please try again.')
+  }
 }
 </script>
+
 <template>
   <Navbar />
   <div class="flex justify-center items-center min-h-screen bg-gray-200">
@@ -62,9 +72,7 @@ const handleSubmit = () => {
           type="checkbox"
           class="form-checkbox h-5 w-5 text-blue-500"
         />
-        <span class="ml-2 text-gray-700"
-          >I accept the <a href="#" class="text-blue-500">terms and conditions</a></span
-        >
+        <span class="ml-2 text-gray-700">I accept the <a href="#" class="text-blue-500">terms and conditions</a></span>
       </label>
       <button
         @click="handleSubmit"

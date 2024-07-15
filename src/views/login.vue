@@ -1,27 +1,43 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import Navbar from './navbar.vue'
-import { ref } from 'vue'
+import { useRouter } from 'vue-router';
+import Navbar from './navbar.vue';
+import { ref } from 'vue';
+import axios from 'axios';
 
-const username = ref('')
-const password = ref('')
+const username = ref('');
+const password = ref('');
 
-const router = useRouter()
+const router = useRouter();
 
-const handleSubmit = () => {
+const handleLogin = async () => {
   if (!username.value || !password.value) {
     alert('Please fill in all fields.')
     return
   }
-  console.log('Username:', username.value)
-  console.log('Password:', password.value)
 
-  username.value = ''
-  password.value = ''
+  try {
+    const response = await axios.post('http://localhost:3000/auth/login', {
+      username: username.value,
+      password: password.value,
+    })
 
-  router.push('/otp')
-}
+    if (response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token)
+      alert(response.data.message)
+      router.push('/loginOTP')
+    } else {
+      alert('Login failed. Please try again.')
+    }
+  } catch (error) {
+    console.error('Error during login:', error)
+    alert('Login failed. Please try again.')
+  } finally {
+    username.value = ''
+    password.value = ''
+  }
+};
 </script>
+
 <template>
   <Navbar />
   <div class="flex justify-center items-center min-h-screen bg-gray-200">
@@ -49,7 +65,7 @@ const handleSubmit = () => {
         >
       </div>
       <button
-       @click="handleSubmit"
+        @click="handleLogin"
         type="submit"
         class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
       >
