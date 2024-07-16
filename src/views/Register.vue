@@ -7,13 +7,19 @@ import axios from 'axios'
 const username = ref('')
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const termsAccepted = ref(false)
 
 const router = useRouter()
 
 const handleSubmit = async () => {
-  if (!username.value || !email.value || !password.value) {
+  if (!username.value || !email.value || !password.value || !confirmPassword.value) {
     alert('Please fill in all fields.')
+    return
+  }
+
+  if (password.value !== confirmPassword.value) {
+    alert('Passwords do not match.')
     return
   }
 
@@ -27,15 +33,18 @@ const handleSubmit = async () => {
       username: username.value,
       email: email.value,
       password: password.value,
+      confirmPassword: confirmPassword.value
     })
     console.log('Registration successful:', response.data)
+    localStorage.setItem('email', email.value)
 
     username.value = ''
     email.value = ''
     password.value = ''
+    confirmPassword.value = ''
 
-    // Redirect to OTP page 
-    router.push('/registerOTP')
+    alert('Registration successful. Please check your email for the verification link.')
+    router.push('/login')
   } catch (error) {
     console.error('Error during registration:', error)
     alert('Registration failed. Please try again.')
@@ -66,13 +75,21 @@ const handleSubmit = async () => {
         placeholder="Password"
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
       />
+      <input
+        v-model="confirmPassword"
+        type="password"
+        placeholder="Confirm Password"
+        class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+      />
       <label class="flex items-center mb-4">
         <input
           v-model="termsAccepted"
           type="checkbox"
           class="form-checkbox h-5 w-5 text-blue-500"
         />
-        <span class="ml-2 text-gray-700">I accept the <a href="#" class="text-blue-500">terms and conditions</a></span>
+        <span class="ml-2 text-gray-700"
+          >I accept the <a href="#" class="text-blue-500">terms and conditions</a></span
+        >
       </label>
       <button
         @click="handleSubmit"

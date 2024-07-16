@@ -6,6 +6,7 @@ import axios from 'axios';
 
 const username = ref('');
 const password = ref('');
+const rememberMe = ref(false);
 
 const router = useRouter();
 
@@ -22,7 +23,15 @@ const handleLogin = async () => {
     })
 
     if (response.data.access_token) {
-      localStorage.setItem('access_token', response.data.access_token)
+      if (rememberMe.value) {
+        localStorage.setItem('access_token', response.data.access_token)
+        localStorage.setItem('username', username.value);
+        localStorage.setItem('remember_me', 'true');
+      } else {
+        sessionStorage.setItem('access_token', response.data.access_token)
+        localStorage.setItem('username', username.value);
+        localStorage.setItem('remember_me', 'false');
+      }
       alert(response.data.message)
       router.push('/loginOTP')
     } else {
@@ -56,7 +65,7 @@ const handleLogin = async () => {
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
       />
       <label class="flex items-center mb-4">
-        <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-500" />
+        <input v-model="rememberMe" type="checkbox" class="form-checkbox h-5 w-5 text-blue-500" />
         <span class="ml-2 text-gray-700">Remember me</span>
       </label>
       <div class="text-right mb-4">

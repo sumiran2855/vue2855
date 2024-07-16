@@ -3,10 +3,11 @@ import Register from '../views/Register.vue'
 import Login from '../views/login.vue'
 import Home from '../views/Home.vue'
 import Forget from '../views/basic/forget.vue'
-import RegisterOTP from '../views/basic/registerOtp.vue'
+import EmailVerification from '../views/basic/emailVerify.vue'
 import LoginOTP from '../views/basic/loginOtp.vue'
 import ResetPassword from '../views/basic/resetPassword.vue'
-
+import Profile from '../views/basic/profile.vue'
+import EditProfile from '../views/basic/editProfile.vue'
 const routes = [
   {
     path: '/',
@@ -36,15 +37,26 @@ const routes = [
     component: ResetPassword
   },
   {
-    path: '/registerOTP',
-    name: 'RegisterOTP',
-    component: RegisterOTP
+    path: '/verify',
+    name: 'EmailVerification',
+    component: EmailVerification
   },
   {
     path: '/loginOTP',
     name: 'LoginOTP',
     component: LoginOTP
   },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile
+  },
+  {
+    path: '/edit-profile',
+    name: 'EditProfile',
+    component: EditProfile,
+  },
+
 ]
 
 const router = createRouter({
