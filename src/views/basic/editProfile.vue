@@ -4,6 +4,25 @@
       <div class="relative py-3 sm:max-w-xl sm:mx-auto">
         <div class="absolute inset-0 bg-gradient-to-r from-teal-400 to-blue-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-lg"></div>
         <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-lg sm:p-20">
+          <button
+          @click="cancelEdit"
+          class="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            class="h-6 w-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
           <div class="max-w-md mx-auto">
             <div>
               <h1 class="text-2xl font-semibold">Edit Profile</h1>
@@ -89,6 +108,10 @@ import Navbar from '../navbar.vue';
       console.error('Error updating profile:', error)
     }
   }
+
+  const cancelEdit = () => {
+  router.push('/profile')
+}
   
   onMounted(() => {
     fetchProfile()

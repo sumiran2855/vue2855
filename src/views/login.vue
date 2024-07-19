@@ -1,14 +1,26 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import Navbar from './navbar.vue';
-import { ref } from 'vue';
-import axios from 'axios';
+import { useRouter } from 'vue-router'
+import Navbar from './navbar.vue'
+import { ref } from 'vue'
+import axios from 'axios'
 
-const username = ref('');
-const password = ref('');
-const rememberMe = ref(false);
+const username = ref('')
+const password = ref('')
+const rememberMe = ref(false)
 
-const router = useRouter();
+const router = useRouter()
+
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('isAuthenticated')
+      router.push('/login')
+    }
+    return Promise.reject(error)
+  }
+)
 
 const handleLogin = async () => {
   if (!username.value || !password.value) {
@@ -19,19 +31,12 @@ const handleLogin = async () => {
   try {
     const response = await axios.post('http://localhost:3000/auth/login', {
       username: username.value,
-      password: password.value,
+      password: password.value
     })
 
     if (response.data.access_token) {
-      if (rememberMe.value) {
-        localStorage.setItem('access_token', response.data.access_token)
-        localStorage.setItem('username', username.value);
-        localStorage.setItem('remember_me', 'true');
-      } else {
-        sessionStorage.setItem('access_token', response.data.access_token)
-        localStorage.setItem('username', username.value);
-        localStorage.setItem('remember_me', 'false');
-      }
+      localStorage.setItem('access_token', response.data.access_token)
+
       alert(response.data.message)
       router.push('/loginOTP')
     } else {
@@ -44,7 +49,7 @@ const handleLogin = async () => {
     username.value = ''
     password.value = ''
   }
-};
+}
 </script>
 
 <template>

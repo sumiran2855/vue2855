@@ -3,21 +3,28 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <nav class="flex justify-between items-center">
         <div class="flex space-x-4">
-          <router-link to="/" class="text-gray-300 hover:text-white px-2 py-2 text-sm font-medium"
-            >Home</router-link
+          <router-link
+            :to="isAuthenticated ? '/' : '#'"
+            class="text-gray-300 hover:text-white px-2 py-2 text-sm font-medium"
+            :class="{ ' text-gray-500': !isAuthenticated }"
+            @click.prevent="!isAuthenticated && preventNavigation"
           >
+            Home
+          </router-link>
           <router-link
             v-if="!isAuthenticated"
             to="/register"
             class="text-gray-300 hover:text-white px-2 py-2 text-sm font-medium"
-            >Register</router-link
           >
+            Register
+          </router-link>
           <router-link
             v-if="!isAuthenticated"
             to="/login"
             class="text-gray-300 hover:text-white px-2 py-2 text-sm font-medium"
-            >Login</router-link
           >
+            Login
+          </router-link>
         </div>
         <div class="relative" v-if="isAuthenticated">
           <button
@@ -46,8 +53,9 @@
             <router-link
               to="/profile"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >View Profile</router-link
             >
+              View Profile
+            </router-link>
             <button
               @click="logout"
               class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -64,13 +72,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const isAuthenticated = ref(false)
 const showProfileDropdown = ref(false)
 const router = useRouter()
 
 const checkAuth = () => {
-  isAuthenticated.value = localStorage.getItem('access_token') !== null
+  isAuthenticated.value = localStorage.getItem('isAuthenticated') === 'true'
 }
 
 const toggleProfileDropdown = () => {
@@ -79,11 +88,22 @@ const toggleProfileDropdown = () => {
 
 const logout = () => {
   localStorage.removeItem('access_token')
+  localStorage.setItem('isAuthenticated', 'false')
   isAuthenticated.value = false
   router.push('/login')
+}
+
+const preventNavigation = () => {
+  alert('Please complete OTP verification to access Home.')
 }
 
 onMounted(() => {
   checkAuth()
 })
 </script>
+
+<style scoped>
+.text-gray-500 {
+  color: #6b7280;
+}
+</style>

@@ -8,6 +8,8 @@ import LoginOTP from '../views/basic/loginOtp.vue'
 import ResetPassword from '../views/basic/resetPassword.vue'
 import Profile from '../views/basic/profile.vue'
 import EditProfile from '../views/basic/editProfile.vue'
+import ChangePassword from '../views/basic/changePassword.vue'
+
 const routes = [
   {
     path: '/',
@@ -54,9 +56,11 @@ const routes = [
   {
     path: '/edit-profile',
     name: 'EditProfile',
-    component: EditProfile,
+    component: EditProfile
   },
-
+  { path: '/change-password', 
+    name:'ChangePassword',
+    component: ChangePassword }
 ]
 
 const router = createRouter({
@@ -65,14 +69,9 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    const isAuthenticated = localStorage.getItem('access_token') !== null
-
-    if (!isAuthenticated) {
-      next({ name: 'Login' })
-    } else {
-      next()
-    }
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+    next('/login')
   } else {
     next()
   }
