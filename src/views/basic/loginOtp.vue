@@ -1,5 +1,5 @@
 <template>
-  <Navbar />
+  <!-- <Navbar /> -->
   <div class="flex justify-center items-center min-h-screen bg-gray-200">
     <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
       <h1 class="text-2xl font-bold mb-8 text-center">Enter OTP</h1>
@@ -23,15 +23,15 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import Navbar from '../navbar.vue'
+// import Navbar from '../navbar.vue'
 import axios from 'axios'
 
 const otp = ref('')
 const router = useRouter()
 
 axios.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('access_token')
       localStorage.removeItem('isAuthenticated')
@@ -61,4 +61,3 @@ const handleVerifyOtp = async () => {
   }
 }
 </script>
-

@@ -1,7 +1,7 @@
 <template>
-  <div id="app">
-    <router-view />
-  </div>
+  <v-app>
+    <router-view class="flex-1" />
+  </v-app>
 </template>
 
 <script setup lang="ts">

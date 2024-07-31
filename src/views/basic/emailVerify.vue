@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import Navbar from '../navbar.vue';
 </script>
 
 <template>
-  <Navbar/>
+  <!-- <Navbar/> -->
   <div class="flex justify-center items-center min-h-screen bg-gray-200">
     <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md text-center">
       <h1 class="text-2xl font-bold mb-8">Congratulations!</h1>

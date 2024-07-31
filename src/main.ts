@@ -1,14 +1,17 @@
-// main.ts
-import { createApp } from 'vue';
-import App from './App.vue';
-import router from './router';
-import 'vuetify/styles'; 
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
 import '../src/tailwind.css'
-import axios from 'axios';
+import axios from 'axios'
+import store from './stores/store'
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
 
 axios.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('access_token')
       localStorage.removeItem('isAuthenticated')
@@ -17,7 +20,9 @@ axios.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+const vuetify = createVuetify({
+  components,
+  directives,
+})
 
-createApp(App)
-  .use(router)
-  .mount('#app');
+createApp(App).use(router).use(vuetify).use(store).mount('#app')

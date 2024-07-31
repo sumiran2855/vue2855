@@ -6,9 +6,9 @@ import Forget from '../views/basic/forget.vue'
 import EmailVerification from '../views/basic/emailVerify.vue'
 import LoginOTP from '../views/basic/loginOtp.vue'
 import ResetPassword from '../views/basic/resetPassword.vue'
-import Profile from '../views/basic/profile.vue'
-import EditProfile from '../views/basic/editProfile.vue'
-import ChangePassword from '../views/basic/changePassword.vue'
+import setting from '../views/Settings/Setting.vue'
+import Agreement from '../views/Create/Agreement.vue'
+import AddNew from '../views/Settings/AddNew.vue'
 
 const routes = [
   {
@@ -49,18 +49,20 @@ const routes = [
     component: LoginOTP
   },
   {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile
+    path: '/setting',
+    name: 'setting',
+    component: setting
   },
   {
-    path: '/edit-profile',
-    name: 'EditProfile',
-    component: EditProfile
+    path: '/agreement',
+    name: 'agreement',
+    component: Agreement
   },
-  { path: '/change-password', 
-    name:'ChangePassword',
-    component: ChangePassword }
+  {
+    path: '/addNew',
+    name: 'AddNew',
+    component: AddNew
+  },
 ]
 
 const router = createRouter({
@@ -70,11 +72,15 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
-  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+  if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
     next('/login')
   } else {
     next()
   }
 })
+
+
+
+
 
 export default router
