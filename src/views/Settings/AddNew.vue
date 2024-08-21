@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Navbar from '../navbar.vue'
 import { ref } from 'vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
 
 const Add1 = ref({
   firstname: '',
@@ -8,14 +10,37 @@ const Add1 = ref({
   email: '',
   contact: '',
   Organisation: '',
-  role: ''
+  role: '',
+  password: 'Ciss@123',
+  confirmPassword: 'Ciss@123'
 })
 
-const saveUser = () => {
-  alert('User details saved!')
-}
+const router = useRouter()
 
-const roles = ['Admin', 'Platform Admin', 'Producer', 'Manager']
+const roles = ['Admin', 'Platform Admin', 'Producer', 'Manager','user']
+
+const saveUser = async () => {
+  try {
+    const response = await axios.post('http://localhost:3000/user/register', {
+      firstName: Add1.value.firstname,
+      lastName: Add1.value.lastname,
+      email: Add1.value.email,
+      mobileNumber: Add1.value.contact,
+      companyName: Add1.value.Organisation,
+      role: Add1.value.role,
+      password: Add1.value.password,
+      confirmPassword: Add1.value.confirmPassword
+    })
+
+    if (response.data) {
+      alert('User details saved!')
+      router.push('/setting')
+    }
+  } catch (error) {
+    console.error('Error saving user:', error)
+    alert('Error saving user details. Please try again.')
+  }
+}
 </script>
 
 <template>
@@ -117,3 +142,7 @@ const roles = ['Admin', 'Platform Admin', 'Producer', 'Manager']
     </v-main>
   </v-app>
 </template>
+
+<style scoped>
+/* Add any additional styles if needed */
+</style>

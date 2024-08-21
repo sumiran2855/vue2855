@@ -3,11 +3,12 @@ import App from './App.vue'
 import router from './router'
 import '../src/tailwind.css'
 import axios from 'axios'
-import store from './stores/store'
+// import store from './stores/store'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import store from './stores'
 
 axios.interceptors.response.use(
   (response) => response,
@@ -25,4 +26,4 @@ const vuetify = createVuetify({
   directives,
 })
 
-createApp(App).use(router).use(vuetify).use(store).mount('#app')
+createApp(App).use(router).use(store).use(vuetify).mount('#app')

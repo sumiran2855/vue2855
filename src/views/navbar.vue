@@ -17,7 +17,7 @@
 
       <v-list-item link @click="goToAdminPanel" class="mb-4">
         <v-list-item-icon class="font-semibold ml-9">
-          <v-icon class="text-blue-500 mr-2">mdi-shield-account</v-icon>Admin Panel
+          <v-icon class="text-blue-500 mr-2">mdi-shield-account</v-icon>Accounting
         </v-list-item-icon>
       </v-list-item>
 
@@ -118,8 +118,8 @@
                 outlined
               >
                 <v-icon class="text-blue-500 mb-2" large>mdi-file-document-outline</v-icon>
-                <v-card-title class="font-bold">Agreement</v-card-title>
-                <v-card-subtitle class="text-sm text-gray-600">
+                <v-card-title class="font-bold text-black-950">Agreement</v-card-title>
+                <v-card-subtitle class="text-sm text-black-900">
                   Create a new premium finance agreement
                   <br />
                   Automated commission to your operational bank account
@@ -267,7 +267,7 @@ const goToDashboard = () => {
 }
 
 const goToAdminPanel = () => {
-  router.push('/admin-panel')
+  router.push('/accounting')
 }
 
 const openCreateDialog = () => {

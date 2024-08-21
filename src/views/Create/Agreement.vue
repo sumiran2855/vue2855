@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import Navbar from '../navbar.vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const Add1 = ref({
   firstname: '',
@@ -10,14 +14,14 @@ const Add1 = ref({
   Address: '',
   city: '',
   state: '',
-  Zip: ''
+  zipcode: ''
 })
 
 const Add2 = ref<
   Array<{
     Buisness: string
     Address: string
-    Address2: string
+    Address2?: string
     city: string
     state: string
     Zip: string
@@ -79,9 +83,8 @@ const quotes = ref<
     otherFees: number
     brokerFee: number
     policyFee: number
-    commission:number
-    AgencyFess:number
-
+    commission: number
+    AgencyFess: number
   }>
 >([
   {
@@ -99,8 +102,8 @@ const quotes = ref<
     otherFees: 0,
     brokerFee: 0,
     policyFee: 0,
-    commission:0,
-    AgencyFess:0
+    commission: 0,
+    AgencyFess: 0
   }
 ])
 
@@ -121,9 +124,19 @@ const addNewFile = () => {
     otherFees: 0,
     brokerFee: 0,
     policyFee: 0,
-    commission:0,
-    AgencyFess:0
+    commission: 0,
+    AgencyFess: 0
   })
+}
+
+const validateFile = (event: Event, index: number) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  if (file && file.type !== 'application/pdf') {
+    alert('Only PDF files are allowed!')
+    files.value[index] = null
+  }
 }
 
 const removeFile = (index: number) => {
@@ -132,13 +145,181 @@ const removeFile = (index: number) => {
     quotes.value.splice(index, 1)
   }
 }
+
+const currentStep = ref(0)
+
+// const submitData = async () => {
+//   try {
+//     const requestPayload = {
+//       firstname: Add1.value.firstname,
+//       lastname: Add1.value.lastname,
+//       email: Add1.value.email,
+//       contact: Add1.value.contact,
+//       Address: Add1.value.Address,
+//       city: Add1.value.city,
+//       state: Add1.value.state,
+//       zipcode: Add1.value.zipcode,
+//       customerType: customerType.value,
+//       businesses: Add2.value,
+//       quotes: quotes.value.map((quote) => ({
+//         ...quote,
+//         effectiveDate: quote.effectiveDate ? new Date(quote.effectiveDate).toISOString() : null,
+//         expirationDate: quote.expirationDate ? new Date(quote.expirationDate).toISOString() : null
+//       }))
+//     }
+
+//     console.log('Request Payload:', JSON.stringify(requestPayload, null, 2))
+//     await axios.post('http://localhost:3000/agreement/create', requestPayload)
+//     alert('Data saved successfully!')
+//     router.push('/')
+//   } catch (error) {
+//     console.error('Error saving data:', error)
+//     alert('Error saving data. Please check the console for more details.')
+//   }
+// }
+
+const submitData = async () => {
+  try {
+    const requestPayload = {
+      firstname: Add1.value.firstname,
+      lastname: Add1.value.lastname,
+      email: Add1.value.email,
+      contact: Add1.value.contact,
+      Address: Add1.value.Address,
+      city: Add1.value.city,
+      state: Add1.value.state,
+      zipcode: Add1.value.zipcode,
+      customerType: customerType.value,
+      businesses: Add2.value,
+      quotes: quotes.value.map((quote) => {
+        const premium = Number(quote.premium) || 0
+        const taxes = Number(quote.taxes) || 0
+        const otherFees = Number(quote.otherFees) || 0
+        const brokerFee = Number(quote.brokerFee) || 0
+        const policyFee = Number(quote.policyFee) || 0
+        const commissionRate = Number(quote.minEarnedRate) || 0
+        const commission = premium * (commissionRate / 100)
+        const AgencyFess = Number(quote.AgencyFess) || 0
+
+        const totalCost =
+          premium + taxes + otherFees + brokerFee + policyFee + commission + AgencyFess
+        console.log(totalCost)
+        return {
+          ...quote,
+          effectiveDate: quote.effectiveDate ? new Date(quote.effectiveDate).toISOString() : null,
+          expirationDate: quote.expirationDate
+            ? new Date(quote.expirationDate).toISOString()
+            : null,
+          totalCost
+        }
+      })
+    }
+
+    console.log('Request Payload:', JSON.stringify(requestPayload, null, 2))
+    await axios.post('http://localhost:3000/agreement/create', requestPayload)
+    alert('Data saved successfully!')
+    router.push('/')
+  } catch (error) {
+    console.error('Error saving data:', error)
+    alert('Error saving data. Please check the console for more details.')
+  }
+}
+
+const validateStep1 = () => {
+  const baseValid =
+    Add1.value.firstname &&
+    Add1.value.lastname &&
+    Add1.value.email &&
+    Add1.value.Address &&
+    Add1.value.city &&
+    Add1.value.state &&
+    Add1.value.zipcode &&
+    Add1.value.contact
+
+  const commercialValid =
+    customerType.value !== 'commercial' ||
+    Add2.value.every(
+      (business) =>
+        business.Buisness &&
+        business.Address &&
+        business.Address2 &&
+        business.city &&
+        business.state &&
+        business.Zip
+    )
+
+  return baseValid && commercialValid
+}
+
+const validateStep2 = () => {
+  return files.value.every(
+    (file, index) =>
+      file &&
+      quotes.value[index].quoteNumber &&
+      quotes.value[index].policyNumber &&
+      quotes.value[index].carrierCompany &&
+      quotes.value[index].wholesaler &&
+      quotes.value[index].coverage &&
+      quotes.value[index].effectiveDate &&
+      quotes.value[index].expirationDate &&
+      quotes.value[index].minDaysToCancel >= 0 &&
+      quotes.value[index].minEarnedRate >= 0 &&
+      quotes.value[index].premium >= 0 &&
+      quotes.value[index].taxes >= 0 &&
+      quotes.value[index].otherFees >= 0 &&
+      quotes.value[index].brokerFee >= 0 &&
+      quotes.value[index].policyFee >= 0 &&
+      quotes.value[index].commission >= 0 &&
+      quotes.value[index].AgencyFess >= 0
+  )
+}
+
+const handleStepChange = (newStep: number) => {
+  if (newStep > currentStep.value) {
+    if (currentStep.value === 0 && !validateStep1()) {
+      alert('Please fill out all required fields in Step 1.')
+      return
+    }
+    if (currentStep.value === 2 && !validateStep2()) {
+      alert('Please complete all required fields in Step 2.')
+      return
+    }
+  }
+
+  currentStep.value = newStep
+}
+
+const totalCostsPerQuote = computed(() => {
+  return quotes.value.map((quote) => {
+    const premium = Number(quote.premium) || 0
+    const taxes = Number(quote.taxes) || 0
+    const otherFees = Number(quote.otherFees) || 0
+    const brokerFee = Number(quote.brokerFee) || 0
+    const policyFee = Number(quote.policyFee) || 0
+    const commissionRate = Number(quote.minEarnedRate) || 0
+    const commission = premium * (commissionRate / 100)
+    const AgencyFess = Number(quote.AgencyFess) || 0
+
+    const totalCost = premium + taxes + otherFees + brokerFee + policyFee + commission + AgencyFess
+    
+    console.log(`Calculated total cost for quote ${quote.quoteNumber}:`, totalCost) 
+
+    return totalCost;
+  })
+})
 </script>
 
 <template>
   <v-app>
     <Navbar />
     <v-container class="pt-16 pb-6 px-16" max-width="60px">
-      <v-stepper :items="['Step 1', 'Step 2', 'Step 3']" class="mt-4">
+      <v-stepper
+        hide-actions
+        alt-labels
+        v-model="currentStep"
+        :items="['Step 1', 'Step 2', 'Step 3']"
+        class="mt-4"
+      >
         <template v-slot:item.1>
           <v-card flat class="pa-4">
             <v-autocomplete
@@ -146,7 +327,7 @@ const removeFile = (index: number) => {
               clearable
               chips
               label="Create"
-              :items="['sumiran.b@cisinlabs.com']"
+              :items="['sumiran.b@cisinlabs.com', 'ankita.p@cisinlabs.com']"
               variant="outlined"
             ></v-autocomplete>
           </v-card>
@@ -211,7 +392,7 @@ const removeFile = (index: number) => {
               </v-col>
               <v-col>
                 <v-text-field
-                  v-model="Add1.Zip"
+                  v-model="Add1.zipcode"
                   :counter="10"
                   label="ZipCode"
                   hide-details
@@ -243,7 +424,6 @@ const removeFile = (index: number) => {
               </v-radio-group>
             </v-row>
 
-            
             <div v-if="showBusinessForm" v-for="(business, index) in Add2" :key="index">
               <h3 class="my-4 font-semibold">Business Form {{ index + 1 }}</h3>
               <div>
@@ -344,6 +524,16 @@ const removeFile = (index: number) => {
               </v-col>
             </v-row>
           </div>
+          <div class="flex justify-end mt-8">
+            <v-btn
+              @click="handleStepChange(2)"
+              color="primary"
+              class="py-2 px-4 rounded-lg shadow-md text-white font-semibold"
+            >
+              <v-icon>mdi-arrow-right</v-icon>
+              <span class="ml-2">Next</span>
+            </v-btn>
+          </div>
         </template>
 
         <template v-slot:item.2>
@@ -355,6 +545,8 @@ const removeFile = (index: number) => {
                     v-model="files[index]"
                     label="File input"
                     class="mb-4"
+                    accept=".pdf"
+                    @change="validateFile($event, index)"
                   ></v-file-input>
 
                   <div v-if="files[index]">
@@ -376,26 +568,50 @@ const removeFile = (index: number) => {
                     ></v-row>
                     <v-row>
                       <v-col cols="12" md="6">
-                        <v-text-field
+                        <v-select
                           v-model="quotes[index].carrierCompany"
+                          :items="[
+                            { text: 'Carrier A', value: 'Carrier A' },
+                            { text: 'Carrier B', value: 'Carrier B' },
+                            { text: 'Carrier C', value: 'Carrier C' },
+                            { text: 'Carrier D', value: 'Carrier D' }
+                          ]"
+                          item-value="value"
+                          item-title="text"
                           label="Carrier Company"
                           variant="outlined"
                           class="mb-4"
-                        ></v-text-field></v-col
+                        ></v-select></v-col
                       ><v-col cols="12" md="6">
-                        <v-text-field
+                        <v-select
                           v-model="quotes[index].wholesaler"
+                          :items="[
+                            { text: 'wholesaler A', value: 'wholesaler A' },
+                            { text: 'wholesaler B', value: 'wholesaler B' },
+                            { text: 'wholesaler C', value: 'wholesaler C' },
+                            { text: 'wholesaler D', value: 'wholesaler D' }
+                          ]"
+                          item-value="value"
+                          item-title="text"
                           label="Wholesaler"
                           variant="outlined"
                           class="mb-4"
-                        ></v-text-field></v-col
+                        ></v-select></v-col
                     ></v-row>
-                    <v-text-field
+                    <v-select
                       v-model="quotes[index].coverage"
+                      :items="[
+                        { text: 'coverage A', value: 'coverage A' },
+                        { text: 'coverage B', value: 'coverage B' },
+                        { text: 'coverage C', value: 'coverage C' },
+                        { text: 'coverage D', value: 'coverage D' }
+                      ]"
+                      item-value="value"
+                      item-title="text"
                       label="Coverage"
                       variant="outlined"
                       class="mb-4"
-                    ></v-text-field>
+                    ></v-select>
                     <v-row
                       ><v-col cols="12" md="6">
                         <v-text-field
@@ -420,7 +636,6 @@ const removeFile = (index: number) => {
                         <v-text-field
                           v-model="quotes[index].minDaysToCancel"
                           label="Minimum Days to Cancel"
-                          prefix="$"
                           variant="outlined"
                           class="mb-4"
                         ></v-text-field
@@ -520,10 +735,209 @@ const removeFile = (index: number) => {
               </v-col>
             </v-row>
           </div>
+
+          <div class="flex justify-between mt-8">
+            <v-btn
+              @click="handleStepChange(currentStep - 1)"
+              color="primary"
+              class="py-2 px-4 rounded-lg shadow-md text-white font-semibold"
+            >
+              <v-icon>mdi-arrow-left</v-icon>
+              <span class="ml-2">Previous</span>
+            </v-btn>
+            <v-btn
+              @click="handleStepChange(currentStep + 1)"
+              color="primary"
+              class="py-2 px-4 rounded-lg shadow-md text-white font-semibold"
+            >
+              <v-icon>mdi-arrow-right</v-icon>
+              <span class="ml-2">Next</span>
+            </v-btn>
+          </div>
         </template>
 
         <template v-slot:item.3>
-          <v-card title="Step Three" flat class="pa-4"> </v-card>
+          <v-card flat class="p-16 bg-white shadow-lg rounded-xl">
+            <div class="mb-12 border-b border-gray-300 pb-8 pt-6">
+              <h3 class="text-3xl font-semibold text-gray-800 mb-6">Personal Information</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">First Name:</label>
+                  <p class="mt-1 text-lg text-gray-900">{{ Add1.firstname }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Last Name:</label>
+                  <p class="mt-1 text-lg text-gray-900">{{ Add1.lastname }}</p>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-gray-700">Email:</label>
+                  <p class="mt-1 text-lg text-gray-900">{{ Add1.email }}</p>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-gray-700">Contact:</label>
+                  <p class="mt-1 text-lg text-gray-900">{{ Add1.contact }}</p>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-gray-700">Address:</label>
+                  <p class="mt-1 text-lg text-gray-900">{{ Add1.Address }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">City:</label>
+                  <p class="mt-1 text-lg text-gray-900">{{ Add1.city }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">State:</label>
+                  <p class="mt-1 text-lg text-gray-900">{{ Add1.state }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Zip Code:</label>
+                  <p class="mt-1 text-lg text-gray-900">{{ Add1.zipcode }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="showBusinessForm" class="mb-12 border-b border-gray-300 pb-8">
+              <h3 class="text-3xl font-semibold text-gray-800 mb-6">Business Information</h3>
+              <div v-for="(business, index) in Add2" :key="index" class="mb-8">
+                <h4 class="text-2xl font-semibold text-gray-700 mb-4">Business {{ index + 1 }}</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Business Name:</label>
+                    <p class="mt-1 text-lg text-gray-900">{{ business.Buisness }}</p>
+                  </div>
+                  <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Address:</label>
+                    <p class="mt-1 text-lg text-gray-900">{{ business.Address }}</p>
+                  </div>
+                  <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Address 2:</label>
+                    <p class="mt-1 text-lg text-gray-900">{{ business.Address2 }}</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">City:</label>
+                    <p class="mt-1 text-lg text-gray-900">{{ business.city }}</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">State:</label>
+                    <p class="mt-1 text-lg text-gray-900">{{ business.state }}</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Zip Code:</label>
+                    <p class="mt-1 text-lg text-gray-900">{{ business.Zip }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-12 border-b border-gray-300 pb-8">
+              <h3 class="text-3xl font-semibold text-gray-800 mb-6">Files and Quotes</h3>
+              <div v-for="(file, index) in files" :key="index" class="mb-8">
+                <h4 class="text-2xl font-semibold text-gray-700 mb-4">File {{ index + 1 }}</h4>
+                <p class="text-sm font-medium text-gray-700">File:</p>
+                <p class="mt-1 text-lg text-gray-900">
+                  {{ file ? file.name : 'No file uploaded' }}
+                </p>
+                <div v-if="files[index]" class="mt-6">
+                  <h5 class="text-xl font-semibold text-gray-700 mb-4">Quote Details</h5>
+                  <div class="space-y-3">
+                    <p>
+                      <strong class="font-medium text-gray-800">Quote Number:</strong>
+                      {{ quotes[index].quoteNumber }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Policy Number:</strong>
+                      {{ quotes[index].policyNumber }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Carrier Company:</strong>
+                      {{ quotes[index].carrierCompany }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Wholesaler:</strong>
+                      {{ quotes[index].wholesaler }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Coverage:</strong>
+                      {{ quotes[index].coverage }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Effective Date:</strong>
+                      {{ quotes[index].effectiveDate }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Expiration Date:</strong>
+                      {{ quotes[index].expirationDate }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Min Days to Cancel:</strong>
+                      {{ quotes[index].minDaysToCancel }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Min Earned Rate:</strong>
+                      {{ quotes[index].minEarnedRate }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Premium:</strong>
+                      {{ quotes[index].premium }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Taxes:</strong>
+                      {{ quotes[index].taxes }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Other Fees:</strong>
+                      {{ quotes[index].otherFees }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Broker Fee:</strong>
+                      {{ quotes[index].brokerFee }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Policy Fee:</strong>
+                      {{ quotes[index].policyFee }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Commission:</strong>
+                      {{ quotes[index].commission }}
+                    </p>
+                    <p>
+                      <strong class="font-medium text-gray-800">Agency Fees:</strong>
+                      {{ quotes[index].AgencyFess }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-12 border-b border-gray-300 pb-8">
+              <h3 class="text-3xl font-semibold text-gray-800 mb-6">Total Costs</h3>
+              <div v-for="(cost, index) in totalCostsPerQuote" :key="index" class="mb-4">
+                <p class="text-lg font-medium text-gray-800">
+                  Total cost for quote {{ index + 1 }}:
+                  <span class="font-semibold text-gray-900"> $ {{ Number(cost).toFixed(2) }} </span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex justify-between">
+              <v-btn
+                @click="handleStepChange(currentStep - 1)"
+                color="primary"
+                class="py-2 px-4 rounded-lg shadow-md text-white font-semibold"
+              >
+                <v-icon>mdi-arrow-left</v-icon>
+                <span class="ml-2">Previous</span>
+              </v-btn>
+              <v-btn
+                @click="submitData"
+                color="primary"
+                class="py-2 px-6 rounded-lg shadow-lg text-white font-semibold flex items-center"
+              >
+                <v-icon>mdi-check</v-icon>
+                <span class="">Submit</span>
+              </v-btn>
+            </div>
+          </v-card>
         </template>
       </v-stepper>
     </v-container>
@@ -531,5 +945,3 @@ const removeFile = (index: number) => {
 </template>
 
 <style scoped></style>
-
-

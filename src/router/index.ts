@@ -9,6 +9,7 @@ import ResetPassword from '../views/basic/resetPassword.vue'
 import setting from '../views/Settings/Setting.vue'
 import Agreement from '../views/Create/Agreement.vue'
 import AddNew from '../views/Settings/AddNew.vue'
+import Accounting from '../views/Accounting.vue'
 
 const routes = [
   {
@@ -51,7 +52,8 @@ const routes = [
   {
     path: '/setting',
     name: 'setting',
-    component: setting
+    component: setting,
+    meta: { requiresAuth: true },
   },
   {
     path: '/agreement',
@@ -63,6 +65,11 @@ const routes = [
     name: 'AddNew',
     component: AddNew
   },
+  {
+    path: '/accounting',
+    name: 'accounting',
+    component: Accounting
+  }
 ]
 
 const router = createRouter({

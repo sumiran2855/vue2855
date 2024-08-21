@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import Navbar from '../navbar.vue'
 import { ref } from 'vue'
 import axios from 'axios'
 

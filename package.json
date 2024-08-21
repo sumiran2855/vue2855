@@ -17,6 +17,7 @@
     "@headlessui/vue": "^1.7.22",
     "@mdi/font": "^7.4.47",
     "axios": "^1.7.2",
+    "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.34",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.14.10",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vitejs/plugin-vue-jsx": "^4.0.0",
