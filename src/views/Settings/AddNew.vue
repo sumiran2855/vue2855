@@ -1,15 +1,32 @@
 <script setup lang="ts">
 import Navbar from '../navbar.vue'
-import { ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { fetchOrganisationDetails } from '../../components/organisationService';
+
+const organisationDetails = reactive({
+  businessName: '',
+  phone: '',
+  website: '',
+  streetAddress: '',
+  taxId: '',
+  type: '',
+  ownerName: '',
+  ownerJobTitle: '',
+  ownerDOB: '',
+  ownerSSN: '',
+  streetAddress2: '',
+  ownerPhone: '',
+  status: ''
+})
 
 const Add1 = ref({
   firstname: '',
   lastname: '',
   email: '',
   contact: '',
-  Organisation: '',
+  businessName: '',
   role: '',
   password: 'Ciss@123',
   confirmPassword: 'Ciss@123'
@@ -17,7 +34,7 @@ const Add1 = ref({
 
 const router = useRouter()
 
-const roles = ['Admin', 'Platform Admin', 'Producer', 'Manager','user']
+const roles = ['admin', 'platform Admin', 'producer', 'manager','user']
 
 const saveUser = async () => {
   try {
@@ -25,8 +42,8 @@ const saveUser = async () => {
       firstName: Add1.value.firstname,
       lastName: Add1.value.lastname,
       email: Add1.value.email,
-      mobileNumber: Add1.value.contact,
-      companyName: Add1.value.Organisation,
+      phone: Add1.value.contact,
+      businessName: Add1.value.businessName,
       role: Add1.value.role,
       password: Add1.value.password,
       confirmPassword: Add1.value.confirmPassword
@@ -41,6 +58,10 @@ const saveUser = async () => {
     alert('Error saving user details. Please try again.')
   }
 }
+
+onMounted(() => {
+  fetchOrganisationDetails(organisationDetails)
+})
 </script>
 
 <template>
@@ -114,7 +135,7 @@ const saveUser = async () => {
           <v-row class="mb-4">
             <v-col>
               <v-text-field
-                v-model="Add1.Organisation"
+                v-model="organisationDetails.businessName"
                 :counter="10"
                 label="Organisation"
                 hide-details

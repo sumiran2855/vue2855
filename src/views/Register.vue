@@ -6,8 +6,8 @@ import axios from 'axios'
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
-const companyName = ref('')
-const mobileNumber = ref('')
+const businessName = ref('')
+const phone = ref('')
 const website = ref('')
 const streetAddress = ref('')
 const streetAddress2 = ref('')
@@ -16,7 +16,7 @@ const state = ref('')
 const zipCode = ref('')
 const firstName = ref('')
 const lastName = ref('')
-const phoneNumber = ref('')
+const ownerPhone = ref('')
 const termsAccepted = ref(false)
 
 const router = useRouter()
@@ -26,8 +26,8 @@ const handleSubmit = async () => {
     !email.value ||
     !password.value ||
     !confirmPassword.value ||
-    !companyName.value ||
-    !mobileNumber.value ||
+    !businessName.value ||
+    !phone.value ||
     !website.value ||
     !streetAddress.value ||
     !city.value ||
@@ -35,7 +35,7 @@ const handleSubmit = async () => {
     !zipCode.value ||
     !firstName.value ||
     !lastName.value ||
-    !phoneNumber.value
+    !ownerPhone.value
   ) {
     alert('Please fill in all fields.')
     return
@@ -56,8 +56,8 @@ const handleSubmit = async () => {
       email: email.value,
       password: password.value,
       confirmPassword: confirmPassword.value,
-      companyName: companyName.value,
-      mobileNumber: mobileNumber.value,
+      businessName: businessName.value,
+      phone: phone.value,
       website: website.value,
       streetAddress: streetAddress.value,
       streetAddress2: streetAddress2.value,
@@ -66,7 +66,7 @@ const handleSubmit = async () => {
       zipCode: zipCode.value,
       firstName: firstName.value,
       lastName: lastName.value,
-      phoneNumber: phoneNumber.value
+      ownerPhone: ownerPhone.value
     })
     console.log('Registration successful:', response.data)
     localStorage.setItem('email', email.value)
@@ -74,8 +74,8 @@ const handleSubmit = async () => {
     email.value = ''
     password.value = ''
     confirmPassword.value = ''
-    companyName.value = ''
-    mobileNumber.value = ''
+    businessName.value = ''
+    phone.value = ''
     website.value = ''
     streetAddress.value = ''
     streetAddress2.value = ''
@@ -84,7 +84,7 @@ const handleSubmit = async () => {
     zipCode.value = ''
     firstName.value = ''
     lastName.value = ''
-    phoneNumber.value = ''
+    ownerPhone.value = ''
 
     alert('Registration successful. Please check your email for the verification link.')
     router.push('/login')
@@ -101,13 +101,13 @@ const handleSubmit = async () => {
       <h1 class="text-2xl font-bold mb-8 text-center">Create a Account</h1>
       <div class="mb-4 text-gray-700 text-sm font-bold">Tell us about your Insurance agency:</div>
       <input
-        v-model="companyName"
+        v-model="businessName"
         type="text"
         placeholder="Company Name"
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm"
       />
       <input
-        v-model="mobileNumber"
+        v-model="phone"
         type="text"
         placeholder="Mobile Number"
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm"
@@ -184,7 +184,7 @@ const handleSubmit = async () => {
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm"
       />
       <input
-        v-model="phoneNumber"
+        v-model="ownerPhone"
         type="text"
         placeholder="Phone Number"
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm"

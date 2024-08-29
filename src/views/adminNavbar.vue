@@ -15,15 +15,9 @@
         </v-list-item-icon>
       </v-list-item>
 
-      <v-list-item link @click="goToAdminPanel" class="mb-4">
+      <v-list-item link class="mb-4">
         <v-list-item-icon class="font-semibold ml-9">
           <v-icon class="text-blue-500 mr-2">mdi-shield-account</v-icon>Accounting
-        </v-list-item-icon>
-      </v-list-item>
-
-      <v-list-item link @click="openCreateDialog" class="mb-4">
-        <v-list-item-icon class="font-semibold ml-9">
-          <v-icon class="text-blue-500 mr-2">mdi-plus-circle-outline</v-icon>create
         </v-list-item-icon>
       </v-list-item>
     </v-list>
@@ -32,7 +26,7 @@
   <v-app-bar :elevation="2" class="bg-white text-blue-500">
     <v-app-bar-nav-icon @click="toggleSidebar"></v-app-bar-nav-icon>
     <v-app-bar-title class="text-center flex-grow-1 font-bold">
-      {{ userProfile.businessName }}
+      Link Platform Administration
     </v-app-bar-title>
     <v-spacer></v-spacer>
 
@@ -40,29 +34,7 @@
       <v-icon>mdi-magnify</v-icon>
     </v-btn>
 
-    <v-menu v-model="helpDropdownOpen" offset-y>
-      <template v-slot:activator="{ props }">
-        <v-btn icon v-bind="props">
-          <v-icon>mdi-help-circle-outline</v-icon>
-        </v-btn>
-      </template>
-      <v-list class="mt-2">
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title>Email for Help</v-list-item-title>
-            <v-list-item-subtitle>CIShelpDesk@company.com</v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-        <v-divider></v-divider>
-        <v-list-item @click="emitOpenHelpForm">
-          <v-list-item-content>
-            <v-list-item-title>Submit an Issue</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-menu>
-
-    <v-btn icon @click="goToSettings">
+    <v-btn icon>
       <v-icon>mdi-cog</v-icon>
     </v-btn>
 
@@ -97,12 +69,7 @@
 
   <!-- create dialog box -->
 
-  <v-dialog
-    v-if="organisationDetails.status == 'verified'"
-    v-model="createDialog"
-    max-width="1000px"
-    persistent
-  >
+  <v-dialog v-model="createDialog" max-width="1000px" persistent>
     <v-card class="rounded-lg">
       <v-card-title>
         <div class="flex justify-between items-center w-full">
@@ -192,56 +159,6 @@
     </v-card>
   </v-dialog>
 
-  <v-dialog
-    v-if="organisationDetails.status === 'pending'"
-    v-model="createDialog"
-    max-width="1000px"
-    persistent
-  >
-    <v-card class="rounded-lg">
-      <v-card-title>
-        <div class="flex justify-between items-center w-full px-4 py-2 border-b border-gray-300">
-          <div class="flex flex-col">
-            <span class="text-xl font-semibold">Incomplete Detail</span>
-            <span class="text-sm font-sans">First Complete the Organization Details.</span>
-          </div>
-
-          <v-btn icon @click="closeCreateDialog" small>
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </div>
-        <v-card-subtitle class="px-4 py-4">
-          <div class="bg-gray-100 p-6 rounded-lg border border-gray-200">
-            <div class="mb-4">
-              <span class="text-lg font-medium">Business details:</span>
-              <p class="mt-1 text-sm text-gray-600">
-                Please complete your business and owner details like TIN (Tax Identification
-              </p>
-              <p>Number), SSN (Social Security Number), DOB (Date of Birth), etc.</p>
-            </div>
-            <div class="mb-4">
-              <span class="text-lg font-medium">Bank details:</span>
-              <p class="mt-1 text-sm text-gray-600">
-                Please provide your operational and trust account details.
-              </p>
-            </div>
-            <div>
-              <span class="text-lg font-medium">Legal document:</span>
-              <p class="mt-1 text-sm text-gray-600">
-                Can you please provide a legal document (e.g., SS-4 confirmation letter, Letter
-              </p>
-              <p>
-                147C) that provides confirmation of the entity's legal name and TIN? We will need
-              </p>
-              <p>this document in order for you to transact with Link-Finance.</p>
-            </div>
-          </div>
-        </v-card-subtitle>
-        <div class="flex justify-end mr-10 py-8"><v-btn @click="goToOrganisation"> Go To Organisation </v-btn></div>
-      </v-card-title>
-    </v-card>
-  </v-dialog>
-
   <v-dialog v-model="searchDialog" max-width="600px" persistent>
     <v-card class="rounded-lg">
       <v-card-title>
@@ -270,11 +187,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import FormDialog from '../views/PopUpDialogs.vue/helpForm.vue'
-import { fetchOrganisationDetails } from '../components/organisationService'
 const sidebarOpen = ref(false)
 const dropdownOpen = ref(false)
 const helpDropdownOpen = ref(false)
@@ -282,24 +198,8 @@ const showBackButton = ref(false)
 const searchDialog = ref(false)
 const createDialog = ref(false)
 const searchQuery = ref('')
-const userProfile = ref({ firstName: '', lastName: '', email: '', businessName: '' })
+const userProfile = ref({ firstName: '', lastName: '', email: '', companyName: '' })
 const router = useRouter()
-
-const organisationDetails = reactive({
-  businessName: '',
-  phone: '',
-  website: '',
-  streetAddress: '',
-  taxId: '',
-  type: '',
-  ownerName: '',
-  ownerJobTitle: '',
-  ownerDOB: '',
-  ownerSSN: '',
-  streetAddress2: '',
-  ownerPhone: '',
-  status: ''
-})
 
 const checkAuth = async () => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
@@ -315,17 +215,13 @@ const checkAuth = async () => {
         firstName: response.data.firstName,
         lastName: response.data.lastName,
         email: response.data.email,
-        businessName: response.data.businessName
+        companyName: response.data.companyName
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
     }
   }
 }
-
-onMounted(() => {
-  fetchOrganisationDetails(organisationDetails)
-})
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
@@ -348,11 +244,6 @@ const goToAdminPanel = () => {
 
 const openCreateDialog = () => {
   createDialog.value = true
-}
-
-const goToOrganisation=()=>{
-  router.push('/setting')
-  createDialog.value= false;
 }
 
 const closeCreateDialog = () => {
@@ -413,5 +304,3 @@ onMounted(() => {
 <style>
 @import '@mdi/font/css/materialdesignicons.css';
 </style>
-
-integrate that dialog box with this navbar which have a create button

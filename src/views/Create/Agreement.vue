@@ -148,36 +148,6 @@ const removeFile = (index: number) => {
 
 const currentStep = ref(0)
 
-// const submitData = async () => {
-//   try {
-//     const requestPayload = {
-//       firstname: Add1.value.firstname,
-//       lastname: Add1.value.lastname,
-//       email: Add1.value.email,
-//       contact: Add1.value.contact,
-//       Address: Add1.value.Address,
-//       city: Add1.value.city,
-//       state: Add1.value.state,
-//       zipcode: Add1.value.zipcode,
-//       customerType: customerType.value,
-//       businesses: Add2.value,
-//       quotes: quotes.value.map((quote) => ({
-//         ...quote,
-//         effectiveDate: quote.effectiveDate ? new Date(quote.effectiveDate).toISOString() : null,
-//         expirationDate: quote.expirationDate ? new Date(quote.expirationDate).toISOString() : null
-//       }))
-//     }
-
-//     console.log('Request Payload:', JSON.stringify(requestPayload, null, 2))
-//     await axios.post('http://localhost:3000/agreement/create', requestPayload)
-//     alert('Data saved successfully!')
-//     router.push('/')
-//   } catch (error) {
-//     console.error('Error saving data:', error)
-//     alert('Error saving data. Please check the console for more details.')
-//   }
-// }
-
 const submitData = async () => {
   try {
     const requestPayload = {
@@ -301,10 +271,10 @@ const totalCostsPerQuote = computed(() => {
     const AgencyFess = Number(quote.AgencyFess) || 0
 
     const totalCost = premium + taxes + otherFees + brokerFee + policyFee + commission + AgencyFess
-    
-    console.log(`Calculated total cost for quote ${quote.quoteNumber}:`, totalCost) 
 
-    return totalCost;
+    console.log(`Calculated total cost for quote ${quote.quoteNumber}:`, totalCost)
+
+    return totalCost
   })
 })
 </script>
@@ -325,7 +295,6 @@ const totalCostsPerQuote = computed(() => {
             <v-autocomplete
               v-model="Add1.email"
               clearable
-              chips
               label="Create"
               :items="['sumiran.b@cisinlabs.com', 'ankita.p@cisinlabs.com']"
               variant="outlined"

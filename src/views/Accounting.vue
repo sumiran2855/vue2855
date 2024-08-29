@@ -92,7 +92,7 @@ const goToNextPage = () => {
   <v-app>
     <navbar />
     <v-main>
-      <v-container></v-container>
+      <v-container>
       <v-row class="align-center mb-4 pl-14">
         <v-col cols="auto">
           <v-btn icon @click="$router.go(-1)">
@@ -103,7 +103,7 @@ const goToNextPage = () => {
           <h1 class="text-h4 font-weight-bold">Accounting</h1>
         </v-col>
       </v-row>
-      <div class="p-16 bg-gray-100">
+      <div class="p-16">
         <div class="bg-white rounded-lg shadow-md p-5">
           <div class="flex gap-5 mb-4">
             <button
@@ -615,6 +615,7 @@ const goToNextPage = () => {
           </div>
         </div>
       </div>
+    </v-container>
     </v-main>
   </v-app>
 </template>

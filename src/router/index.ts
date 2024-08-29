@@ -10,6 +10,8 @@ import setting from '../views/Settings/Setting.vue'
 import Agreement from '../views/Create/Agreement.vue'
 import AddNew from '../views/Settings/AddNew.vue'
 import Accounting from '../views/Accounting.vue'
+import Administration from '../views/admin/Administration.vue'
+import addWholesaler from '../views/wholesaler/addNew.vue'
 
 const routes = [
   {
@@ -69,6 +71,16 @@ const routes = [
     path: '/accounting',
     name: 'accounting',
     component: Accounting
+  },
+  {
+    path: '/admin/setting',
+    name: 'adminSetting',
+    component: Administration
+  },
+  {
+    path: '/setting/wholesaler/new',
+    name: 'addWholesaler',
+    component: addWholesaler
   }
 ]
 
