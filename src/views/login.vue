@@ -6,7 +6,6 @@ import axios from 'axios'
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
-
 const router = useRouter()
 
 axios.interceptors.response.use(

@@ -3,7 +3,10 @@ import Navbar from '../navbar.vue'
 import { onMounted, reactive, ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
-import { fetchOrganisationDetails } from '../../components/organisationService';
+import { fetchOrganisationDetails } from '../../components/organisationService'
+
+const router = useRouter()
+const roles = ['admin', 'platform Admin', 'producer', 'manager', 'user']
 
 const organisationDetails = reactive({
   businessName: '',
@@ -31,10 +34,6 @@ const Add1 = ref({
   password: 'Ciss@123',
   confirmPassword: 'Ciss@123'
 })
-
-const router = useRouter()
-
-const roles = ['admin', 'platform Admin', 'producer', 'manager','user']
 
 const saveUser = async () => {
   try {

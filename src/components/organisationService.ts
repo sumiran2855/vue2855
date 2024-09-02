@@ -22,7 +22,6 @@ export const fetchOrganisationDetails = async (organisationDetails: any) => {
 
     if (response.data) {
       Object.assign(organisationDetails, response.data)
-    
     } else {
       console.error('No organisation details found for the given userId')
     }
@@ -30,7 +29,6 @@ export const fetchOrganisationDetails = async (organisationDetails: any) => {
     console.error('Error fetching organisation details:', error)
   }
 }
-
 
 export const fetchUserss = async (user: any) => {
   try {
@@ -49,7 +47,7 @@ export const fetchUserss = async (user: any) => {
         Authorization: `Bearer ${token}`
       }
     })
-    const user= response.data
+    const user = response.data
     if (response.data) {
       Object.assign(user, response.data)
     } else {
@@ -71,23 +69,20 @@ export const fetchBankDetails = async (BankDetails: any) => {
 
     const decodedToken = jwtDecode(token)
     const userId = decodedToken.sub
-    console.log(userId);
-    
+
     const response = await axios.get(`http://localhost:3000/bank/getUser/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
-    const response2 = await axios.get(`http://localhost:3000/bank/getUser/cb2b7fc7-8aae-49a5-9661-024bcb0aa86d`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    const details = response2.data;
-    console.log(details.bankAccountHolderName);
+    // const response2 = await axios.get(`http://localhost:3000/bank/getUser/cb2b7fc7-8aae-49a5-9661-024bcb0aa86d`, {
+    //   headers: {
+    //     Authorization: `Bearer ${token}`
+    //   }
+    // })
+
     if (response.data) {
       Object.assign(BankDetails, response.data)
-    console.log(BankDetails.bankAccountHolderName);
     } else {
       console.error('No organisation details found for the given userId')
     }

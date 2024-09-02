@@ -24,11 +24,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn
-          text
-          @click="closeDialog"
-          class="bg-gray-200 rounded-md hover:bg-gray-300"
-        >
+        <v-btn text @click="closeDialog" class="bg-gray-200 rounded-md hover:bg-gray-300">
           Cancel
         </v-btn>
         <v-btn
@@ -44,46 +40,45 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
-const dialog = ref(false);
+const dialog = ref(false)
 const issue = ref({
   title: '',
   description: ''
-});
+})
 
 const closeDialog = () => {
-  dialog.value = false;
-};
+  dialog.value = false
+}
 
 const submitIssue = async () => {
   if (!issue.value.title || !issue.value.description) {
-    alert('Please fill in all fields');
-    return;
+    alert('Please fill in all fields')
+    return
   }
 
   try {
-    await axios.post('http://localhost:3000/issues/save', issue.value);
+    await axios.post('http://localhost:3000/issues/save', issue.value)
     console.log(issue.value)
-    alert('Issue submitted successfully');
+    alert('Issue submitted successfully')
     issue.value = {
       title: '',
       description: ''
-    };
-    closeDialog();
+    }
+    closeDialog()
   } catch (error) {
-    console.error('Error submitting issue:', error);
-    alert('Failed to submit issue');
+    console.error('Error submitting issue:', error)
+    alert('Failed to submit issue')
   }
-};
+}
 
 const openDialog = () => {
-  dialog.value = true;
-};
+  dialog.value = true
+}
 
 onMounted(() => {
-  window.addEventListener('open-help-form', openDialog);
-});
+  window.addEventListener('open-help-form', openDialog)
+})
 </script>
-

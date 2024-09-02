@@ -4,7 +4,12 @@ import Navbar from '../navbar.vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
+const isAutocompleteComplete = ref(false)
 const router = useRouter()
+const customerType = ref<string | null>(null)
+const showBusinessForm = computed(() => customerType.value === 'commercial')
+const files = ref<Array<File | null>>([null])
+const currentStep = ref(0)
 
 const Add1 = ref({
   firstname: '',
@@ -37,18 +42,6 @@ const Add2 = ref<
   }
 ])
 
-const isAutocompleteComplete = ref(false)
-
-watch(
-  () => Add1.value.email,
-  (newValue) => {
-    isAutocompleteComplete.value = !!newValue
-  }
-)
-
-const customerType = ref<string | null>(null)
-const showBusinessForm = computed(() => customerType.value === 'commercial')
-
 const addNewBusiness = () => {
   Add2.value.push({
     Buisness: '',
@@ -60,13 +53,6 @@ const addNewBusiness = () => {
   })
 }
 
-const removeBusiness = (index: number) => {
-  if (Add2.value.length > 1) {
-    Add2.value.splice(index, 1)
-  }
-}
-
-const files = ref<Array<File | null>>([null])
 const quotes = ref<
   Array<{
     quoteNumber: string
@@ -129,6 +115,19 @@ const addNewFile = () => {
   })
 }
 
+const removeBusiness = (index: number) => {
+  if (Add2.value.length > 1) {
+    Add2.value.splice(index, 1)
+  }
+}
+
+watch(
+  () => Add1.value.email,
+  (newValue) => {
+    isAutocompleteComplete.value = !!newValue
+  }
+)
+
 const validateFile = (event: Event, index: number) => {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
@@ -143,55 +142,6 @@ const removeFile = (index: number) => {
   if (files.value.length > 1) {
     files.value.splice(index, 1)
     quotes.value.splice(index, 1)
-  }
-}
-
-const currentStep = ref(0)
-
-const submitData = async () => {
-  try {
-    const requestPayload = {
-      firstname: Add1.value.firstname,
-      lastname: Add1.value.lastname,
-      email: Add1.value.email,
-      contact: Add1.value.contact,
-      Address: Add1.value.Address,
-      city: Add1.value.city,
-      state: Add1.value.state,
-      zipcode: Add1.value.zipcode,
-      customerType: customerType.value,
-      businesses: Add2.value,
-      quotes: quotes.value.map((quote) => {
-        const premium = Number(quote.premium) || 0
-        const taxes = Number(quote.taxes) || 0
-        const otherFees = Number(quote.otherFees) || 0
-        const brokerFee = Number(quote.brokerFee) || 0
-        const policyFee = Number(quote.policyFee) || 0
-        const commissionRate = Number(quote.minEarnedRate) || 0
-        const commission = premium * (commissionRate / 100)
-        const AgencyFess = Number(quote.AgencyFess) || 0
-
-        const totalCost =
-          premium + taxes + otherFees + brokerFee + policyFee + commission + AgencyFess
-        console.log(totalCost)
-        return {
-          ...quote,
-          effectiveDate: quote.effectiveDate ? new Date(quote.effectiveDate).toISOString() : null,
-          expirationDate: quote.expirationDate
-            ? new Date(quote.expirationDate).toISOString()
-            : null,
-          totalCost
-        }
-      })
-    }
-
-    console.log('Request Payload:', JSON.stringify(requestPayload, null, 2))
-    await axios.post('http://localhost:3000/agreement/create', requestPayload)
-    alert('Data saved successfully!')
-    router.push('/')
-  } catch (error) {
-    console.error('Error saving data:', error)
-    alert('Error saving data. Please check the console for more details.')
   }
 }
 
@@ -277,6 +227,53 @@ const totalCostsPerQuote = computed(() => {
     return totalCost
   })
 })
+
+const submitData = async () => {
+  try {
+    const requestPayload = {
+      firstname: Add1.value.firstname,
+      lastname: Add1.value.lastname,
+      email: Add1.value.email,
+      contact: Add1.value.contact,
+      Address: Add1.value.Address,
+      city: Add1.value.city,
+      state: Add1.value.state,
+      zipcode: Add1.value.zipcode,
+      customerType: customerType.value,
+      businesses: Add2.value,
+      quotes: quotes.value.map((quote) => {
+        const premium = Number(quote.premium) || 0
+        const taxes = Number(quote.taxes) || 0
+        const otherFees = Number(quote.otherFees) || 0
+        const brokerFee = Number(quote.brokerFee) || 0
+        const policyFee = Number(quote.policyFee) || 0
+        const commissionRate = Number(quote.minEarnedRate) || 0
+        const commission = premium * (commissionRate / 100)
+        const AgencyFess = Number(quote.AgencyFess) || 0
+
+        const totalCost =
+          premium + taxes + otherFees + brokerFee + policyFee + commission + AgencyFess
+        console.log(totalCost)
+        return {
+          ...quote,
+          effectiveDate: quote.effectiveDate ? new Date(quote.effectiveDate).toISOString() : null,
+          expirationDate: quote.expirationDate
+            ? new Date(quote.expirationDate).toISOString()
+            : null,
+          totalCost
+        }
+      })
+    }
+
+    console.log('Request Payload:', JSON.stringify(requestPayload, null, 2))
+    await axios.post('http://localhost:3000/agreement/create', requestPayload)
+    alert('Data saved successfully!')
+    router.push('/')
+  } catch (error) {
+    console.error('Error saving data:', error)
+    alert('Error saving data. Please check the console for more details.')
+  }
+}
 </script>
 
 <template>

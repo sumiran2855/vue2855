@@ -1,3 +1,156 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import DropdownFilter from '../views/basic/dropdownFilter.vue'
+import navbar from './navbar.vue'
+
+const activeTab = ref('finance')
+const currentPage = ref(1)
+const rowsPerPage = ref(5)
+const totalPages = computed(() => Math.ceil(tableData.value.length / rowsPerPage.value))
+const totalPages2 = computed(() => Math.ceil(InvoiceData.value.length / rowsPerPage.value))
+
+const handleSelect = (option: string) => {
+  console.log('Selected:', option)
+}
+
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * rowsPerPage.value
+  const end = start + rowsPerPage.value
+  return tableData.value.slice(start, end)
+})
+
+const paginatedInvoice = computed(() => {
+  const start = (currentPage.value - 1) * rowsPerPage.value
+  const end = start + rowsPerPage.value
+  return InvoiceData.value.slice(start, end)
+})
+
+const changeRowsPerPage = (event) => {
+  rowsPerPage.value = parseInt(event.target.value, 10)
+  currentPage.value = 1
+}
+
+const goToPreviousPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+const goToNextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
+}
+const filterOptions = {
+  producer: ['Goods', 'Matte'],
+  status: ['Active', 'Inactive'],
+  payment: ['Credit Card', 'Bank Transfer'],
+  createdDate: ['All Dates', 'Last 30 days', 'Last 6 months', 'Last year', 'Custom'],
+  purchasedDate: ['Last 30 days', 'Last 6 months', 'Last year']
+}
+
+const tableData = ref([
+  {
+    insured: 'Vardhan Jain',
+    provider: 'American Empire Insurance Company',
+    effectiveDate: 'Jul 25, 2024',
+    grossPremium: '$12,300.00',
+    status: 'Active',
+    actions: '...'
+  },
+  {
+    insured: 'Ujjwal Vinze',
+    provider: 'American Empire Insurance Company',
+    effectiveDate: 'Aug 30, 2001',
+    grossPremium: '$30,300.00',
+    status: 'Active',
+    actions: '...'
+  },
+  {
+    insured: 'Ankita Pandey',
+    provider: 'American Empire Insurance Company',
+    effectiveDate: 'Sep 9, 2002',
+    grossPremium: '$90,310.00',
+    status: 'Active',
+    actions: '...'
+  },
+  {
+    insured: 'Ankita Pandey',
+    provider: 'American Empire Insurance Company',
+    effectiveDate: 'Sep 9, 2002',
+    grossPremium: '$90,310.00',
+    status: 'Active',
+    actions: '...'
+  },
+  {
+    insured: 'Ankita Pandey',
+    provider: 'American Empire Insurance Company',
+    effectiveDate: 'Sep 9, 2002',
+    grossPremium: '$90,310.00',
+    status: 'Active',
+    actions: '...'
+  },
+  {
+    insured: 'Ankita Pandey',
+    provider: 'American Empire Insurance Company',
+    effectiveDate: 'Sep 9, 2002',
+    grossPremium: '$90,310.00',
+    status: 'Active',
+    actions: '...'
+  },
+  {
+    insured: 'Ankita Pandey',
+    provider: 'American Empire Insurance Company',
+    effectiveDate: 'Sep 9, 2002',
+    grossPremium: '$90,310.00',
+    status: 'Active',
+    actions: '...'
+  }
+])
+
+const InvoiceData = ref([
+  {
+    Customer: 'Vardhan Jain',
+    Amount: '$12,300.00',
+    Status: 'Paid',
+    Memo: 'Test Memo',
+    Due: 'Aug 30, 2001',
+    Created: 'Agency'
+  },
+  {
+    Customer: 'Vardhan Jain',
+    Amount: '$12,300.00',
+    Status: 'Paid',
+    Memo: 'Test Memo',
+    Due: 'Aug 30, 2001',
+    Created: 'Agency'
+  },
+  {
+    Customer: 'Vardhan Jain',
+    Amount: '$12,300.00',
+    Status: 'Paid',
+    Memo: 'Test Memo',
+    Due: 'Aug 30, 2001',
+    Created: 'Agency'
+  },
+  {
+    Customer: 'Vardhan Jain',
+    Amount: '$12,300.00',
+    Status: 'Paid',
+    Memo: 'Test Memo',
+    Due: 'Aug 30, 2001',
+    Created: 'Agency'
+  },
+  {
+    Customer: 'Vardhan Jain',
+    Amount: '$12,300.00',
+    Status: 'Paid',
+    Memo: 'Test Memo',
+    Due: 'Aug 30, 2001',
+    Created: 'Agency'
+  }
+])
+</script>
 <template>
   <navbar />
   <v-container></v-container>
@@ -390,159 +543,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, ref } from 'vue'
-import DropdownFilter from '../views/basic/dropdownFilter.vue'
-import navbar from './navbar.vue'
-const activeTab = ref('finance')
-
-const filterOptions = {
-  producer: ['Goods', 'Matte'],
-  status: ['Active', 'Inactive'],
-  payment: ['Credit Card', 'Bank Transfer'],
-  createdDate: ['All Dates', 'Last 30 days', 'Last 6 months', 'Last year', 'Custom'],
-  purchasedDate: ['Last 30 days', 'Last 6 months', 'Last year']
-}
-
-const handleSelect = (option: string) => {
-  console.log('Selected:', option)
-}
-
-const tableData = ref([
-  {
-    insured: 'Vardhan Jain',
-    provider: 'American Empire Insurance Company',
-    effectiveDate: 'Jul 25, 2024',
-    grossPremium: '$12,300.00',
-    status: 'Active',
-    actions: '...'
-  },
-  {
-    insured: 'Ujjwal Vinze',
-    provider: 'American Empire Insurance Company',
-    effectiveDate: 'Aug 30, 2001',
-    grossPremium: '$30,300.00',
-    status: 'Active',
-    actions: '...'
-  },
-  {
-    insured: 'Ankita Pandey',
-    provider: 'American Empire Insurance Company',
-    effectiveDate: 'Sep 9, 2002',
-    grossPremium: '$90,310.00',
-    status: 'Active',
-    actions: '...'
-  },
-  {
-    insured: 'Ankita Pandey',
-    provider: 'American Empire Insurance Company',
-    effectiveDate: 'Sep 9, 2002',
-    grossPremium: '$90,310.00',
-    status: 'Active',
-    actions: '...'
-  },
-  {
-    insured: 'Ankita Pandey',
-    provider: 'American Empire Insurance Company',
-    effectiveDate: 'Sep 9, 2002',
-    grossPremium: '$90,310.00',
-    status: 'Active',
-    actions: '...'
-  },
-  {
-    insured: 'Ankita Pandey',
-    provider: 'American Empire Insurance Company',
-    effectiveDate: 'Sep 9, 2002',
-    grossPremium: '$90,310.00',
-    status: 'Active',
-    actions: '...'
-  },
-  {
-    insured: 'Ankita Pandey',
-    provider: 'American Empire Insurance Company',
-    effectiveDate: 'Sep 9, 2002',
-    grossPremium: '$90,310.00',
-    status: 'Active',
-    actions: '...'
-  }
-])
-
-const InvoiceData = ref([
-  {
-    Customer: 'Vardhan Jain',
-    Amount: '$12,300.00',
-    Status: 'Paid',
-    Memo: 'Test Memo',
-    Due: 'Aug 30, 2001',
-    Created: 'Agency'
-  },
-  {
-    Customer: 'Vardhan Jain',
-    Amount: '$12,300.00',
-    Status: 'Paid',
-    Memo: 'Test Memo',
-    Due: 'Aug 30, 2001',
-    Created: 'Agency'
-  },
-  {
-    Customer: 'Vardhan Jain',
-    Amount: '$12,300.00',
-    Status: 'Paid',
-    Memo: 'Test Memo',
-    Due: 'Aug 30, 2001',
-    Created: 'Agency'
-  },
-  {
-    Customer: 'Vardhan Jain',
-    Amount: '$12,300.00',
-    Status: 'Paid',
-    Memo: 'Test Memo',
-    Due: 'Aug 30, 2001',
-    Created: 'Agency'
-  },
-  {
-    Customer: 'Vardhan Jain',
-    Amount: '$12,300.00',
-    Status: 'Paid',
-    Memo: 'Test Memo',
-    Due: 'Aug 30, 2001',
-    Created: 'Agency'
-  }
-])
-
-const currentPage = ref(1)
-const rowsPerPage = ref(5)
-
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value
-  const end = start + rowsPerPage.value
-  return tableData.value.slice(start, end)
-})
-
-const paginatedInvoice = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value
-  const end = start + rowsPerPage.value
-  return InvoiceData.value.slice(start, end)
-})
-
-const totalPages = computed(() => Math.ceil(tableData.value.length / rowsPerPage.value))
-const totalPages2 = computed(() => Math.ceil(InvoiceData.value.length / rowsPerPage.value))
-
-const changeRowsPerPage = (event) => {
-  rowsPerPage.value = parseInt(event.target.value, 10)
-  currentPage.value = 1
-}
-
-const goToPreviousPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
-
-const goToNextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
-</script>

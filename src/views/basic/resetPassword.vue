@@ -31,7 +31,6 @@ const handleSubmit = async () => {
 }
 </script>
 <template>
-  <!-- <Navbar /> -->
   <div class="flex justify-center items-center min-h-screen bg-gray-200">
     <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
       <h1 class="text-2xl font-bold mb-8 text-center">Reset Password</h1>

@@ -2,20 +2,6 @@
 import Navbar from '../navbar.vue'
 import { ref, computed } from 'vue'
 
-type ItemType = 'wholesaler' | 'carrier'
-
-interface Item {
-  name: string
-  type: ItemType
-}
-
-const items = ref<Item[]>([
-  { name: '13643 St A', type: 'wholesaler' },
-  { name: '21st Century Insurance Company', type: 'wholesaler' },
-  { name: '5Star CRC', type: 'wholesaler' },
-  { name: 'Carrier A', type: 'carrier' }
-])
-
 const data = ref({
   selectedItem: ''
 })
@@ -35,6 +21,20 @@ const getSelectedItemType = computed(() => {
   const selected = getSelectedItem.value
   return selected ? selected.type.charAt(0).toUpperCase() + selected.type.slice(1) : ''
 })
+
+type ItemType = 'wholesaler' | 'carrier'
+
+interface Item {
+  name: string
+  type: ItemType
+}
+
+const items = ref<Item[]>([
+  { name: '13643 St A', type: 'wholesaler' },
+  { name: '21st Century Insurance Company', type: 'wholesaler' },
+  { name: '5Star CRC', type: 'wholesaler' },
+  { name: 'Carrier A', type: 'carrier' }
+])
 </script>
 
 <template>

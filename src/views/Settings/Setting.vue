@@ -3,14 +3,75 @@ import { ref, computed, onMounted, reactive, watch } from 'vue'
 import axios from 'axios'
 import { useRoute, useRouter } from 'vue-router'
 import navbar from '../navbar.vue'
-import { getUserIdFromToken } from '../../components/utils'
-import store from '../../stores/index'
 import { jwtDecode } from 'jwt-decode'
 import {
   fetchBankDetails,
   fetchOrganisationDetails,
   fetchUserss
 } from '../../components/organisationService'
+
+const router = useRouter()
+const currentTab = ref('User Management')
+const searchTerm = ref('')
+const users = ref<User[]>([])
+const Organisations = ref<[]>([])
+const dialogVisible = ref(false)
+const sameAsAbove = ref(false)
+const editOrgDialogVisible = ref(false)
+const editBankDialogVisible = ref(false)
+const getToken = () => localStorage.getItem('access_token')
+const file = ref<File | null>(null)
+const activeTab = ref('Wholesaler')
+const activeTab2 = ref('Branding')
+const currentPage = ref(1)
+const rowsPerPage = ref(5)
+const totalPages = computed(() => Math.ceil(tableData.value.length / rowsPerPage.value))
+const pdfRule = (value) => {
+  if (!value) return true
+  return (value && value.type === 'application/pdf') || 'Only PDF files are accepted'
+}
+
+const openEditOrgDialog = () => {
+  editOrgDialogVisible.value = true
+}
+
+const openEditBankDialog = () => {
+  editBankDialogVisible.value = true
+}
+
+const cancelEditBank = () => {
+  editBankDialogVisible.value = false
+}
+
+const cancelEditOrg = () => {
+  editOrgDialogVisible.value = false
+}
+
+const redirectToLogin = () => {
+  router.push('/login')
+}
+const addUser = () => {
+  router.push('/addNew')
+}
+const addNewWholesaler = () => {
+  router.push('/setting/wholesaler/new')
+}
+const changeRowsPerPage = (event) => {
+  rowsPerPage.value = parseInt(event.target.value, 10)
+  currentPage.value = 1
+}
+
+const goToPreviousPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+const goToNextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
+}
 
 interface User {
   id: string
@@ -32,11 +93,6 @@ const user = reactive({
   businessName: ''
 })
 
-const router = useRouter()
-const currentTab = ref('User Management')
-const searchTerm = ref('')
-const users = ref<User[]>([])
-const dialogVisible = ref(false)
 const editingUser = ref<User>({
   id: '',
   firstName: '',
@@ -46,31 +102,32 @@ const editingUser = ref<User>({
   role: ''
 })
 
-const fetchUsers = async () => {
-  try {
-    const token = localStorage.getItem('access_token')
-    if (!token) {
-      router.push('/login')
-      return
-    }
+const organisationDetails = reactive({
+  businessName: '',
+  phone: '',
+  website: '',
+  streetAddress: '',
+  taxId: '',
+  type: '',
+  ownerName: '',
+  ownerJobTitle: '',
+  ownerDOB: '',
+  ownerSSN: '',
+  streetAddress2: '',
+  ownerPhone: '',
+  status: ''
+})
 
-    const response = await axios.get('http://localhost:3000/user/getAllUsers', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    users.value = response.data
-  } catch (error: any) {
-    console.error('Error fetching users:', error)
-
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('access_token')
-      router.push('/login')
-    }
-  }
-}
-
-onMounted(fetchUsers)
+const bankDetails = reactive({
+  bankAccountHolderName: '',
+  bankAccountNumber: '',
+  bankRoutingNumber: '',
+  trustAccountHolderName: '',
+  trustAccountNumber: '',
+  trustRoutingNumber: '',
+  Account: '-',
+  Document: '-'
+})
 
 const changeTab = (tab: string) => {
   currentTab.value = tab
@@ -96,6 +153,72 @@ const filteredUsers = computed(() => {
 const editUser = (user: User) => {
   editingUser.value = { ...user }
   dialogVisible.value = true
+}
+const cancelEdit = () => {
+  editingUser.value = { id: '', firstName: '', lastName: '', phone: '', email: '', role: '' }
+  dialogVisible.value = false
+}
+
+watch(sameAsAbove, (newValue) => {
+  if (newValue) {
+    bankDetails.trustAccountHolderName = bankDetails.bankAccountHolderName
+    bankDetails.trustAccountNumber = bankDetails.bankAccountNumber
+    bankDetails.trustRoutingNumber = bankDetails.bankRoutingNumber
+  } else {
+    bankDetails.trustAccountHolderName = ''
+    bankDetails.trustAccountNumber = ''
+    bankDetails.trustRoutingNumber = ''
+  }
+})
+
+const handleFileChange = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files.length > 0) {
+    file.value = input.files[0]
+  } else {
+    file.value = null
+  }
+}
+
+const tableData = ref([
+  {
+    name: 'Vardhan Jain',
+    financingStatus: 'American Empire Insurance Company',
+    commission: 'Jul 25, 2024',
+    minEarned: '$12,300.00',
+    paymentMenthod: 'Active',
+    actions: '...'
+  }
+])
+
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * rowsPerPage.value
+  const end = start + rowsPerPage.value
+  return tableData.value.slice(start, end)
+})
+
+const fetchUsers = async () => {
+  try {
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      router.push('/login')
+      return
+    }
+
+    const response = await axios.get('http://localhost:3000/user/getAllUsers', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    users.value = response.data
+  } catch (error: any) {
+    console.error('Error fetching users:', error)
+
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('access_token')
+      router.push('/login')
+    }
+  }
 }
 
 const updateUser = async () => {
@@ -126,11 +249,6 @@ const updateUser = async () => {
   }
 }
 
-const cancelEdit = () => {
-  editingUser.value = { id: '', firstName: '', lastName: '', phone: '', email: '', role: '' }
-  dialogVisible.value = false
-}
-
 const deleteUser = async (userId: string) => {
   try {
     await axios.delete(`http://localhost:3000/user/deleteUser/${userId}`, {
@@ -141,124 +259,6 @@ const deleteUser = async (userId: string) => {
     fetchUsers()
   } catch (error) {
     console.error('Error deleting user:', error)
-  }
-}
-
-const addUser = () => {
-  router.push('/addNew')
-}
-
-const organisationDetails = reactive({
-  businessName: '',
-  phone: '',
-  website: '',
-  streetAddress: '',
-  taxId: '',
-  type: '',
-  ownerName: '',
-  ownerJobTitle: '',
-  ownerDOB: '',
-  ownerSSN: '',
-  streetAddress2: '',
-  ownerPhone: '',
-  status: ''
-})
-
-const bankDetails = reactive({
-  bankAccountHolderName: '',
-  bankAccountNumber: '',
-  bankRoutingNumber: '',
-  trustAccountHolderName: '',
-  trustAccountNumber: '',
-  trustRoutingNumber: '',
-  Account: '-',
-  Document: '-'
-})
-
-const sameAsAbove = ref(false)
-
-watch(sameAsAbove, (newValue) => {
-  if (newValue) {
-    bankDetails.trustAccountHolderName = bankDetails.bankAccountHolderName
-    bankDetails.trustAccountNumber = bankDetails.bankAccountNumber
-    bankDetails.trustRoutingNumber = bankDetails.bankRoutingNumber
-  } else {
-    bankDetails.trustAccountHolderName = ''
-    bankDetails.trustAccountNumber = ''
-    bankDetails.trustRoutingNumber = ''
-  }
-})
-
-const pdfRule = (value) => {
-  if (!value) return true
-  return (value && value.type === 'application/pdf') || 'Only PDF files are accepted'
-}
-
-const editOrgDialogVisible = ref(false)
-const editBankDialogVisible = ref(false)
-
-const openEditOrgDialog = () => {
-  editOrgDialogVisible.value = true
-}
-
-const openEditBankDialog = () => {
-  editBankDialogVisible.value = true
-}
-
-const cancelEditBank = () => {
-  editBankDialogVisible.value = false
-}
-
-const cancelEditOrg = () => {
-  editOrgDialogVisible.value = false
-}
-
-const getToken = () => localStorage.getItem('access_token')
-
-const getUserId = (token) => {
-  return getUserIdFromToken(token)
-}
-console.log(getUserId)
-
-const redirectToLogin = () => {
-  router.push('/login')
-}
-
-const saveOrganisationDetails = async () => {
-  try {
-    const token = localStorage.getItem('access_token')
-    if (!token) {
-      redirectToLogin()
-      return
-    }
-
-    const decodedToken = jwtDecode(token)
-    const userId = decodedToken.sub
-
-    const organisationDetailsWithUserId = {
-      ...organisationDetails,
-      userId
-    }
-
-    console.log(organisationDetailsWithUserId)
-
-    const response = await axios({
-      method: 'POST',
-      url: `http://localhost:3000/organisation/save`,
-      data: organisationDetailsWithUserId,
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-
-    const { OrganisationId } = response.data
-
-    store.dispatch('setOrganisationId', OrganisationId)
-
-    console.log('Organisation details saved:', response.data)
-    editOrgDialogVisible.value = false
-  } catch (error) {
-    console.error('Error saving organisation details:', error)
   }
 }
 
@@ -292,38 +292,6 @@ const updateOrganisationDetails = async () => {
     editOrgDialogVisible.value = false
   } catch (error) {
     console.error('Error updating organisation details:', error)
-  }
-}
-
-// const handleSaveOrUpdateOrganisation = async () => {
-//   const token = getToken()
-//   if (!token) {
-//     redirectToLogin()
-//     return
-//   }
-//   const userId = getUserId(token)
-
-//   const checkResponse = await axios.get(`http://localhost:3000/organisation/getUser/${userId}`, {
-//     headers: {
-//       Authorization: `Bearer ${token}`
-//     }
-//   })
-
-//   if (checkResponse.data) {
-//     await updateOrganisationDetails()
-//   } else {
-//     await saveOrganisationDetails()
-//   }
-// }
-
-const file = ref<File | null>(null)
-
-const handleFileChange = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  if (input.files && input.files.length > 0) {
-    file.value = input.files[0]
-  } else {
-    file.value = null
   }
 }
 
@@ -441,55 +409,7 @@ onMounted(() => {
   fetchBankDetails(bankDetails)
   fetchUserss(user)
 })
-
-const activeTab = ref('Wholesaler')
-const activeTab2 = ref('Branding')
-
-const tableData = ref([
-  {
-    name: 'Vardhan Jain',
-    financingStatus: 'American Empire Insurance Company',
-    commission: 'Jul 25, 2024',
-    minEarned: '$12,300.00',
-    paymentMenthod: 'Active',
-    actions: '...'
-  }
-])
-
-const currentPage = ref(1)
-const rowsPerPage = ref(5)
-
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value
-  const end = start + rowsPerPage.value
-  return tableData.value.slice(start, end)
-})
-
-const totalPages = computed(() => Math.ceil(tableData.value.length / rowsPerPage.value))
-
-const changeRowsPerPage = (event) => {
-  rowsPerPage.value = parseInt(event.target.value, 10)
-  currentPage.value = 1
-}
-
-const goToPreviousPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
-
-const goToNextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
-const addNewWholesaler = () => {
-  router.push('/setting/wholesaler/new')
-}
-const Organisations = ref<[]>([])
-const IsCompany = computed(() => {
-  return Organisations.value.some((organisation) => organisationDetails.status === 'pending')
-})
+onMounted(fetchUsers)
 </script>
 
 <template>

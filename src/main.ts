@@ -3,7 +3,6 @@ import App from './App.vue'
 import router from './router'
 import '../src/tailwind.css'
 import axios from 'axios'
-// import store from './stores/store'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
@@ -25,5 +24,4 @@ const vuetify = createVuetify({
   components,
   directives,
 })
-
 createApp(App).use(router).use(store).use(vuetify).mount('#app')

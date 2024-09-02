@@ -6,155 +6,70 @@ import adminNavbar from '../adminNavbar.vue'
 import { jwtDecode } from 'jwt-decode'
 import { getUserIdFromToken } from '../../components/utils'
 
+const router = useRouter()
+const currentTab = ref('General')
+const searchTerm = ref('')
+const users = ref<User[]>([])
+const Organisations = ref<OrganisationDetails[]>([])
+const dialogVisible = ref(false)
+const currentPage = ref(1)
+const rowsPerPage = ref(5)
+const activeTab = ref('Wholesaler')
+const totalPages = computed(() => Math.ceil(tableData.value.length / rowsPerPage.value))
+const getToken = () => localStorage.getItem('access_token')
 
 interface User {
   id: string
   firstName: string
   lastName: string
-  mobileNumber: string
+  ownerPhone: string
   email: string
   role: string
 }
 
-const router = useRouter()
-const currentTab = ref('General')
-const searchTerm = ref('')
-const users = ref<User[]>([])
-  const Organisations = ref<OrganisationDetails[]>([])
-const dialogVisible = ref(false)
+interface OrganisationDetails {
+  businessName: string
+  phone: string
+  email: string
+  website: string
+  streetAddress: string
+  taxId: string
+  type: string
+  ownerName: string
+  ownerJobTitle: string
+  ownerDOB: string
+  ownerSSN: string
+  streetAddress2: string
+  ownerPhone: string
+  status: string
+}
+
 const editingUser = ref<User>({
   id: '',
   firstName: '',
   lastName: '',
-  mobileNumber: '',
+  ownerPhone: '',
   email: '',
   role: ''
 })
 
-const fetchUsers = async () => {
-  try {
-    const token = localStorage.getItem('access_token')
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
-    const response = await axios.get('http://localhost:3000/user/getAllUsers', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    users.value = response.data
-  } catch (error: any) {
-    console.error('Error fetching users:', error)
-
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('access_token')
-      router.push('/login')
-    }
-  }
-}
-
-const fetchAllOrganisation = async () => {
-  try {
-    const token = localStorage.getItem('access_token')
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
-    const response = await axios.get('http://localhost:3000/organisation/getAllUsers', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    Organisations.value = response.data
-  } catch (error: any) {
-    console.error('Error fetching users:', error)
-
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('access_token')
-      router.push('/login')
-    }
-  }
-}
-
-onMounted(fetchUsers)
-onMounted(fetchAllOrganisation);
-
 const changeTab = (tab: string) => {
   currentTab.value = tab
 }
-
-const filteredUsers = computed(() => {
-  if (!Array.isArray(users.value)) {
-    return []
-  }
-  return users.value.filter(
-    (user) =>
-      user.firstName.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.value.toLowerCase())
-  )
-})
 
 const editUser = (user: User) => {
   editingUser.value = { ...user }
   dialogVisible.value = true
 }
 
-const updateUser = async () => {
-  if (editingUser.value) {
-    try {
-      await axios.put('http://localhost:3000/user/updateProfile', editingUser.value, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
-        }
-      })
-      fetchUsers()
-      editingUser.value = {
-        id: '',
-        firstName: '',
-        lastName: '',
-        mobileNumber: '',
-        email: '',
-        role: ''
-      }
-      dialogVisible.value = false
-    } catch (error) {
-      console.error('Error updating user:', error)
-    }
-  } else {
-    console.error('No user data to update')
-  }
-}
-
 const cancelEdit = () => {
-  editingUser.value = { id: '', firstName: '', lastName: '', mobileNumber: '', email: '', role: '' }
+  editingUser.value = { id: '', firstName: '', lastName: '', ownerPhone: '', email: '', role: '' }
   dialogVisible.value = false
-}
-
-const deleteUser = async (userId: string) => {
-  try {
-    await axios.delete(`http://localhost:3000/user/deleteUser/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
-      }
-    })
-    fetchUsers()
-  } catch (error) {
-    console.error('Error deleting user:', error)
-  }
 }
 
 const addUser = () => {
   router.push('/addNew')
 }
-
-const activeTab = ref('Wholesaler')
-
-const currentPage = ref(1)
-const rowsPerPage = ref(5)
 
 const tableData = ref([
   {
@@ -221,8 +136,6 @@ const paginatedData2 = computed(() => {
   return tableData2.value.slice(start, end)
 })
 
-const totalPages = computed(() => Math.ceil(tableData.value.length / rowsPerPage.value))
-
 const changeRowsPerPage = (event) => {
   rowsPerPage.value = parseInt(event.target.value, 10)
   currentPage.value = 1
@@ -239,33 +152,13 @@ const goToNextPage = () => {
     currentPage.value++
   }
 }
-const getToken = () => localStorage.getItem('access_token')
 
 const getUserId = (token) => {
   return getUserIdFromToken(token)
 }
-console.log(getUserId)
 
 const redirectToLogin = () => {
   router.push('/login')
-}
-
-
-interface OrganisationDetails {
-  businessName: string
-  phone: string
-  email: string
-  website: string
-  streetAddress: string
-  taxId: string
-  type: string
-  ownerName: string
-  ownerJobTitle: string
-  ownerDOB: string
-  ownerSSN: string
-  streetAddress2: string
-  ownerPhone: string
-  status: string
 }
 
 const allDetailsFilled = computed(() => {
@@ -288,7 +181,116 @@ const allDetailsFilled = computed(() => {
   )
 })
 
+const filteredUsers = computed(() => {
+  if (!Array.isArray(users.value)) {
+    return []
+  }
+  return users.value.filter(
+    (user) =>
+      user.firstName.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+      user.lastName.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.value.toLowerCase())
+  )
+})
 
+const filteredOrganisation = computed(() => {
+  if (!Array.isArray(Organisations.value)) {
+    return []
+  }
+  return Organisations.value.filter(
+    (user) =>
+      user.status.toLowerCase() === 'pending' &&
+      (user.businessName.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.value.toLowerCase()))
+  )
+})
+
+const fetchUsers = async () => {
+  try {
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      router.push('/login')
+      return
+    }
+
+    const response = await axios.get('http://localhost:3000/user/getAllUsers', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    users.value = response.data
+  } catch (error: any) {
+    console.error('Error fetching users:', error)
+
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('access_token')
+      router.push('/login')
+    }
+  }
+}
+
+const updateUser = async () => {
+  if (editingUser.value) {
+    try {
+      await axios.put('http://localhost:3000/user/updateProfile', editingUser.value, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+      fetchUsers()
+      editingUser.value = {
+        id: '',
+        firstName: '',
+        lastName: '',
+        ownerPhone: '',
+        email: '',
+        role: ''
+      }
+      dialogVisible.value = false
+    } catch (error) {
+      console.error('Error updating user:', error)
+    }
+  } else {
+    console.error('No user data to update')
+  }
+}
+
+const deleteUser = async (userId: string) => {
+  try {
+    await axios.delete(`http://localhost:3000/user/deleteUser/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    })
+    fetchUsers()
+  } catch (error) {
+    console.error('Error deleting user:', error)
+  }
+}
+
+const fetchAllOrganisation = async () => {
+  try {
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      router.push('/login')
+      return
+    }
+
+    const response = await axios.get('http://localhost:3000/organisation/getAllUsers', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    Organisations.value = response.data
+  } catch (error: any) {
+    console.error('Error fetching users:', error)
+
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('access_token')
+      router.push('/login')
+    }
+  }
+}
 
 const updateOrganisationDetails = async (organisation) => {
   try {
@@ -322,46 +324,8 @@ const updateOrganisationDetails = async (organisation) => {
   }
 }
 
-// const fetchOrganisation = async () => {
-//   try {
-//     const token = localStorage.getItem('access_token')
-//     if (!token) {
-//       router.push('/login')
-//       return
-//     }
-
-//     const response = await axios.get('http://localhost:3000/organisation/getAll', {
-//       headers: {
-//         Authorization: `Bearer ${token}`
-//       }
-//     })
-//     const Organisations = response.data
-//     console.log(Organisations[0])
-//   } catch (error: any) {
-//     console.error('Error fetching users:', error)
-
-//     if (error.response && error.response.status === 401) {
-//       localStorage.removeItem('access_token')
-//       router.push('/login')
-//     }
-//   }
-// }
-
-const filteredOrganisation = computed(() => {
-  if (!Array.isArray(Organisations.value)) {
-    return []
-  }
-  return Organisations.value.filter(
-    (user) =>
-      user.status.toLowerCase() === 'pending' &&
-      (user.businessName.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.value.toLowerCase()))
-  )
-})
-
-// onMounted(() => {
-//   fetchOrganisation()
-// })
+onMounted(fetchUsers)
+onMounted(fetchAllOrganisation)
 </script>
 
 <template>
@@ -558,7 +522,7 @@ const filteredOrganisation = computed(() => {
                         {{ user.lastName }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ user.mobileNumber }}
+                        {{ user.ownerPhone }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ user.email }}
@@ -597,7 +561,7 @@ const filteredOrganisation = computed(() => {
                       required
                     ></v-text-field>
                     <v-text-field
-                      v-model="editingUser.mobileNumber"
+                      v-model="editingUser.ownerPhone"
                       label="Mobile Number"
                       required
                     ></v-text-field>

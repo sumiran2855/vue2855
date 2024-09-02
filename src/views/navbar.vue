@@ -1,3 +1,144 @@
+<script setup>
+import { ref, onMounted, reactive, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import FormDialog from '../views/PopUpDialogs.vue/helpForm.vue'
+import { fetchOrganisationDetails } from '../components/organisationService'
+
+const sidebarOpen = ref(false)
+const dropdownOpen = ref(false)
+const helpDropdownOpen = ref(false)
+const showBackButton = ref(false)
+const searchDialog = ref(false)
+const createDialog = ref(false)
+const searchQuery = ref('')
+const userProfile = ref({ firstName: '', lastName: '', email: '', businessName: '' })
+const router = useRouter()
+
+const organisationDetails = reactive({
+  businessName: '',
+  phone: '',
+  website: '',
+  streetAddress: '',
+  taxId: '',
+  type: '',
+  ownerName: '',
+  ownerJobTitle: '',
+  ownerDOB: '',
+  ownerSSN: '',
+  streetAddress2: '',
+  ownerPhone: '',
+  status: ''
+})
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+  showBackButton.value = sidebarOpen.value
+}
+
+const logout = () => {
+  localStorage.removeItem('access_token')
+  localStorage.removeItem('isAuthenticated')
+  router.push('/login')
+}
+
+const goToDashboard = () => {
+  router.push('/')
+}
+
+const goToAdminPanel = () => {
+  router.push('/accounting')
+}
+
+const openCreateDialog = () => {
+  createDialog.value = true
+}
+
+const goToOrganisation = () => {
+  router.push('/setting')
+  createDialog.value = false
+}
+
+const closeCreateDialog = () => {
+  createDialog.value = false
+}
+
+const goToSettings = () => {
+  router.push('/setting')
+}
+
+const emitOpenHelpForm = () => {
+  const event = new Event('open-help-form')
+  window.dispatchEvent(event)
+}
+
+const goBack = () => {
+  showBackButton.value = false
+  sidebarOpen.value = false
+}
+
+const openSearchDialog = () => {
+  searchDialog.value = true
+}
+
+const closeSearchDialog = () => {
+  searchDialog.value = false
+}
+
+const navigateTo = (page) => {
+  switch (page) {
+    case 'Agreement':
+      router.push('/agreement')
+      break
+    case 'Subscription':
+      router.push('/subscription')
+      break
+    case 'Invoice':
+      router.push('/invoice')
+      break
+  }
+  closeCreateDialog()
+}
+
+const performSearch = () => {
+  if (!searchQuery.value) {
+    alert('Please enter a search term')
+    return
+  }
+  console.log('Searching for:', searchQuery.value)
+  closeSearchDialog()
+}
+
+const checkAuth = async () => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+  if (isAuthenticated) {
+    const token = localStorage.getItem('access_token')
+    try {
+      const response = await axios.get('http://localhost:3000/user/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      userProfile.value = {
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
+        email: response.data.email,
+        businessName: response.data.businessName
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }
+}
+
+onMounted(() => {
+  fetchOrganisationDetails(organisationDetails)
+})
+
+onMounted(() => {
+  checkAuth()
+})
+</script>
 <template>
   <v-navigation-drawer v-model="sidebarOpen" app temporary>
     <v-list>
@@ -171,7 +312,7 @@
             </v-col>
             <v-col cols="18" md="6">
               <v-card
-                @click="navigateTo('Agreement')"
+                @click="navigateTo('Document')"
                 class="d-flex flex-column align-center pa-4 cursor-pointer hover:bg-gray-100"
                 outlined
               >
@@ -237,7 +378,9 @@
             </div>
           </div>
         </v-card-subtitle>
-        <div class="flex justify-end mr-10 py-8"><v-btn @click="goToOrganisation"> Go To Organisation </v-btn></div>
+        <div class="flex justify-end mr-10 py-8">
+          <v-btn @click="goToOrganisation"> Go To Organisation </v-btn>
+        </div>
       </v-card-title>
     </v-card>
   </v-dialog>
@@ -269,149 +412,6 @@
   <form-dialog ref="formDialog"></form-dialog>
 </template>
 
-<script setup>
-import { ref, onMounted, reactive, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
-import FormDialog from '../views/PopUpDialogs.vue/helpForm.vue'
-import { fetchOrganisationDetails } from '../components/organisationService'
-const sidebarOpen = ref(false)
-const dropdownOpen = ref(false)
-const helpDropdownOpen = ref(false)
-const showBackButton = ref(false)
-const searchDialog = ref(false)
-const createDialog = ref(false)
-const searchQuery = ref('')
-const userProfile = ref({ firstName: '', lastName: '', email: '', businessName: '' })
-const router = useRouter()
-
-const organisationDetails = reactive({
-  businessName: '',
-  phone: '',
-  website: '',
-  streetAddress: '',
-  taxId: '',
-  type: '',
-  ownerName: '',
-  ownerJobTitle: '',
-  ownerDOB: '',
-  ownerSSN: '',
-  streetAddress2: '',
-  ownerPhone: '',
-  status: ''
-})
-
-const checkAuth = async () => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
-  if (isAuthenticated) {
-    const token = localStorage.getItem('access_token')
-    try {
-      const response = await axios.get('http://localhost:3000/user/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      userProfile.value = {
-        firstName: response.data.firstName,
-        lastName: response.data.lastName,
-        email: response.data.email,
-        businessName: response.data.businessName
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    }
-  }
-}
-
-onMounted(() => {
-  fetchOrganisationDetails(organisationDetails)
-})
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-  showBackButton.value = sidebarOpen.value
-}
-
-const logout = () => {
-  localStorage.removeItem('access_token')
-  localStorage.removeItem('isAuthenticated')
-  router.push('/login')
-}
-
-const goToDashboard = () => {
-  router.push('/')
-}
-
-const goToAdminPanel = () => {
-  router.push('/accounting')
-}
-
-const openCreateDialog = () => {
-  createDialog.value = true
-}
-
-const goToOrganisation=()=>{
-  router.push('/setting')
-  createDialog.value= false;
-}
-
-const closeCreateDialog = () => {
-  createDialog.value = false
-}
-
-const goToSettings = () => {
-  router.push('/setting')
-}
-
-const emitOpenHelpForm = () => {
-  const event = new Event('open-help-form')
-  window.dispatchEvent(event)
-}
-
-const goBack = () => {
-  showBackButton.value = false
-  sidebarOpen.value = false
-}
-
-const openSearchDialog = () => {
-  searchDialog.value = true
-}
-
-const closeSearchDialog = () => {
-  searchDialog.value = false
-}
-
-const navigateTo = (page) => {
-  switch (page) {
-    case 'Agreement':
-      router.push('/agreement')
-      break
-    case 'Subscription':
-      router.push('/subscription')
-      break
-    case 'Invoice':
-      router.push('/invoice')
-      break
-  }
-  closeCreateDialog()
-}
-
-const performSearch = () => {
-  if (!searchQuery.value) {
-    alert('Please enter a search term')
-    return
-  }
-  console.log('Searching for:', searchQuery.value)
-  closeSearchDialog()
-}
-
-onMounted(() => {
-  checkAuth()
-})
-</script>
-
 <style>
 @import '@mdi/font/css/materialdesignicons.css';
 </style>
-
-integrate that dialog box with this navbar which have a create button

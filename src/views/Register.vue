@@ -195,7 +195,9 @@ const handleSubmit = async () => {
           type="checkbox"
           class="form-checkbox h-5 w-5 text-blue-500"
         />
-        <span class="ml-2 text-gray-700">I accept the <a href="#" class="text-blue-500">terms and conditions</a></span>
+        <span class="ml-2 text-gray-700"
+          >I accept the <a href="#" class="text-blue-500">terms and conditions</a></span
+        >
       </label>
       <button
         @click="handleSubmit"
