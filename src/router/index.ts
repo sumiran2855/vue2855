@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, useRouter } from 'vue-router'
 import Register from '../views/Register.vue'
 import Login from '../views/login.vue'
 import Home from '../views/Home.vue'
@@ -7,11 +7,13 @@ import EmailVerification from '../views/basic/emailVerify.vue'
 import LoginOTP from '../views/basic/loginOtp.vue'
 import ResetPassword from '../views/basic/resetPassword.vue'
 import setting from '../views/Settings/Setting.vue'
-import Agreement from '../views/Create/Agreement.vue'
+import Agreement from '../views/Create/creatAgreement.vue'
 import AddNew from '../views/Settings/AddNew.vue'
 import Accounting from '../views/Accounting.vue'
 import Administration from '../views/admin/Administration.vue'
 import addWholesaler from '../views/wholesaler/addNew.vue'
+import ShowAgreement from '../views/Create/ViewAgreement.vue'
+
 
 const routes = [
   {
@@ -55,7 +57,7 @@ const routes = [
     path: '/setting',
     name: 'setting',
     component: setting,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: '/agreement',
@@ -81,6 +83,11 @@ const routes = [
     path: '/setting/wholesaler/new',
     name: 'addWholesaler',
     component: addWholesaler
+  },
+  {
+    path: `/agreement/:agreementId`,
+    name: 'ShowAgreement',
+    component: ShowAgreement
   }
 ]
 
@@ -97,9 +104,5 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
-
-
-
-
 
 export default router

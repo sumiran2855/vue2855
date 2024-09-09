@@ -22,6 +22,7 @@ axios.interceptors.response.use(
 )
 const vuetify = createVuetify({
   components,
-  directives,
+  directives
 })
+
 createApp(App).use(router).use(store).use(vuetify).mount('#app')
