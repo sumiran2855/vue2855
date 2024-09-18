@@ -8,7 +8,7 @@
     <p class="text-gray-700">100 Hallet St., Boston, MA 02124</p>
 
     <div class="flex justify-center mt-2">
-      <table class="table-auto border border-collapse w-full max-w-7xl">
+      <table class="table-auto border border-collapse w-full max-w-9xl">
         <thead>
           <tr>
             <th class="border px-4 py-2 text-left">INSURED'S NAME & ADDRESS</th>
@@ -57,7 +57,7 @@
     </h1>
 
     <div class="flex justify-center mt-2">
-      <table class="table-auto border border-collapse w-full max-w-7xl">
+      <table class="table-auto border border-collapse w-full max-w-9xl">
         <thead>
           <tr>
             <th class="border px-4 py-2 text-left">FC USE ONLY</th>
@@ -89,7 +89,7 @@
       <p>Agency Fee: $ 21.00</p>
     </div>
 
-    <div class="max-w-7xl mx-auto my-8">
+    <div class="max-w-9xl mx-auto my-8">
       <h2 class="text-center text-lg font-bold mb-4 border-b-2 border-black pb-2">
         FEDERAL TRUTH-IN-LENDING DISCLOSURE STATEMENT
       </h2>
@@ -170,7 +170,7 @@
       </div>
     </div>
     <h2 class="mt-4 font-semibold underline">FOR PREMIUM FINANCE CONDITIONS SEE REVERSE SIDE</h2>
-    <div class="flex justify-center border border-black rounded-lg max-w-7xl mx-auto p-4 mt-2">
+    <div class="flex justify-center border border-black rounded-lg max-w-9xl mx-auto p-4 mt-2">
       <p class="text-justify">
         The Federal Equal Credit Opportunity Act prohibits creditors from discriminating against
         credit applicants on the basis of race, color, religion, national origin, sex, marital
@@ -180,10 +180,10 @@
         Room 800, Atlanta, Georgia 30308.
       </p>
     </div>
-    <h2 class="mt-4 font-semibold mx-auto max-w-7xl text-left">
+    <h2 class="mt-4 font-semibold mx-auto max-w-9xl text-left">
       FINANCE CHARGE INCLUDES AN ADMINISTRATIVE FEE OF $16.9
     </h2>
-    <h2 class="mt-2 font-semibold mx-auto max-w-7xl flex justify-center text-left">
+    <h2 class="mt-2 font-semibold mx-auto max-w-9xl flex justify-center text-left">
       NOTICE TO INSURED: 1. DO NOT SIGN THIS AGREEMENT BEFORE YOU READ IT OR IF IT CONTAINS ANY
       BLANK SPACES. 2. YOU ARE ENTITLED TO A COMPLETELY FILLED IN COPY OF THIS AGREEMENT. 3. UNDER
       THE LAW, YOU HAVE THE RIGHT TO PAY OFF IN ADVANCE THE FULL AMOUNT DUE AND UNDER CERTAIN
@@ -192,7 +192,7 @@
       PAGES 1 AND 2 OF THIS AGREEMENT.
     </h2>
 
-    <div class="max-w-7xl mx-auto mt-8 p-4 border border-black rounded-lg">
+    <div class="max-w-9xl mx-auto mt-8 p-4 border border-black rounded-lg">
       <!-- Signature of insured -->
       <div class="flex justify-between items-center mb-4 mt-4">
         <p class="font-bold">MUST BE SIGNED Signature of insured</p>

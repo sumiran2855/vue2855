@@ -23,7 +23,7 @@ const contactError = ref('')
 const premiumError = ref('')
 const zipcodeError = ref('')
 const zipcodeError2 = ref('')
-const emails = ref<Array<{ title: string }>>([]) 
+const emails = ref<Array<{ title: string }>>([])
 const selectedAgreement = ref<Agreement | null>(null)
 
 interface Business {
@@ -67,6 +67,10 @@ interface Agreement {
   city: string
   state: string
   zipcode: string
+  delegateEmail: string
+  delegateFirstname: string
+  delegateLastname: string
+  delegateContact: string
   customerType: string
   businesses: Business[]
   quotes: Quote[]
@@ -185,21 +189,16 @@ const addNewFile = () => {
   })
 }
 
-
-
 const handleChange = async (newValue: string) => {
   if (typeof newValue === 'string') {
     const existingEmail = emails.value.find((email) => email.title === newValue)
     if (existingEmail) {
-      const agreement = agreementData.value.find(
-        (agreement) => agreement.email === newValue
-      )
+      const agreement = agreementData.value.find((agreement) => agreement.email === newValue)
       if (agreement) {
         selectedAgreement.value = agreement
-       
         currentStep.value = 2
         autoFillAgreementData(agreement)
-       
+
         return
       }
     }
@@ -208,53 +207,38 @@ const handleChange = async (newValue: string) => {
 }
 
 const autoFillAgreementData = (agreement: Agreement) => {
+  const formattedContact = agreement.contact.slice(-10)
+  const formattedDelegateContact = agreement.delegateContact.slice(-10)
+
   Add1.value = {
     firstname: agreement.firstname,
     lastname: agreement.lastname,
     email: agreement.email,
     selectedCountryCode: '+91',
     selectedCountryCode2: '+91',
-    contact: agreement.contact,
+    contact:formattedContact,
     Address: agreement.Address,
     city: agreement.city,
     state: agreement.state,
     zipcode: agreement.zipcode,
-    delegateEmail: '',
-    delegateFirstname: '',
-    delegateLastname: '',
-    delegateContact: ''
+    delegateEmail: agreement.delegateEmail,
+    delegateFirstname: agreement.delegateFirstname,
+    delegateLastname: agreement.delegateLastname,
+    delegateContact: formattedDelegateContact
+    // customerType :agreement.customerType
   }
-
   customerType.value = agreement.customerType
-
-  Add2.value = agreement.businesses.map((business) => ({
-    Buisness: business.Buisness,
-    Address: business.Address,
-    Address2: business.Address2,
-    city: business.city,
-    state: business.state,
-    Zip: business.Zip
-  }))
-
-  // quotes.value = agreement.quotes.map((quote) => ({
-  //   quoteNumber: quote.quoteNumber,
-  //   policyNumber: quote.policyNumber,
-  //   carrierCompany: quote.carrierCompany,
-  //   wholesaler: quote.wholesaler,
-  //   coverage: quote.coverage,
-  //   effectiveDate: quote.effectiveDate,
-  //   expirationDate: quote.expirationDate,
-  //   minDaysToCancel: quote.minDaysToCancel,
-  //   minEarnedRate: quote.minEarnedRate,
-  //   premium: quote.premium,
-  //   taxes: quote.taxes,
-  //   otherFees: quote.otherFees,
-  //   brokerFee: quote.brokerFee,
-  //   policyFee: quote.policyFee,
-  //   commission: quote.commission,
-  //   AgencyFess: quote.AgencyFess,
-  //   totalCost: quote.totalCost
-  // }))
+ 
+  if (agreement.customerType === 'commercial') {
+    Add2.value = agreement.businesses.map((business) => ({
+      Buisness: business.Buisness,
+      Address: business.Address,
+      Address2: business.Address2,
+      city: business.city,
+      state: business.state,
+      Zip: business.Zip
+    }))
+  }
 }
 
 const premium = computed(() => quotes.value[index.value].premium)
@@ -540,11 +524,10 @@ const submitData = async () => {
   }
 }
 
-onMounted(async() => {
+onMounted(async () => {
   await fetchAgreement(agreementData)
-  await fetchEmail(agreementData,emails)
+  await fetchEmail(agreementData, emails)
 })
-
 </script>
 
 <template>

@@ -129,6 +129,27 @@ const openPDF = async () => {
     alert('Please allow popups for this website')
   }
 }
+
+
+const loanPolicy = async () => {
+  const token = localStorage.getItem('access_token')
+
+  const response = await axios.get('http://localhost:3000/pdf/loanPolicy', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    responseType: 'blob'
+  })
+
+  const blob = new Blob([response.data], { type: 'application/pdf' })
+  const url = window.URL.createObjectURL(blob)
+  const newTab = window.open(url)
+  if (newTab) {
+    newTab.focus()
+  } else {
+    alert('Please allow popups for this website')
+  }
+}
 </script>
 
 <template>
@@ -308,7 +329,7 @@ const openPDF = async () => {
                 <p>
                   <a href="#" @click="openPDF">Generate Agreement PDF</a>
                 </p>
-                <p><a href="#" @click="openPDF">Generate Loan Agreement PDF</a></p>
+                <p><a href="#" @click="loanPolicy">Generate Loan Agreement PDF</a></p>
               </div>
             </div>
             <div class="flex justify-between items-center text-gray-500">
