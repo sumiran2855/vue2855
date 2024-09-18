@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted } from 'vue'
 import navbar from '../navbar.vue'
 import { fetchAgreement } from '../../components/agreementService'
+import { jwtDecode } from 'jwt-decode'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const dropdownOpen = ref(false)
 const activeTab = ref('customer')
@@ -77,6 +80,55 @@ const setActiveTab = (tabIndex: string) => {
 onMounted(() => {
   fetchAgreement(agreementData)
 })
+const router = useRouter()
+
+const redirectToLogin = () => {
+  router.push('/login')
+}
+
+const SendMail = async () => {
+  try {
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      redirectToLogin()
+      return
+    }
+
+    const decodedToken: any = jwtDecode(token)
+    const userId = decodedToken.sub
+
+    const response = await axios.get(`http://localhost:3000/agreement/${userId}/send-email`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    const message = response.data
+    console.log(message)
+  } catch (error) {
+    console.error('Error sending email:', error)
+  }
+}
+
+const openPDF = async () => {
+  const token = localStorage.getItem('access_token')
+
+  const response = await axios.get('http://localhost:3000/pdf/generate', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    responseType: 'blob'
+  })
+
+  const blob = new Blob([response.data], { type: 'application/pdf' })
+  const url = window.URL.createObjectURL(blob)
+  const newTab = window.open(url)
+  if (newTab) {
+    newTab.focus()
+  } else {
+    alert('Please allow popups for this website')
+  }
+}
 </script>
 
 <template>
@@ -184,6 +236,7 @@ onMounted(() => {
             </button>
             <button
               class="px-3 py-2 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 focus:outline-none"
+              @click="SendMail"
             >
               Send Mail
             </button>
@@ -227,10 +280,10 @@ onMounted(() => {
                   Total: <span>$ {{ quote.totalCost }}.00</span>
                 </p>
                 <p>
-                  Down payment: <span>${{ (quote.totalCost * 0.25).toFixed(2) }} </span>
+                  Down payment: <span>$ {{ (quote.totalCost * 0.25).toFixed(2) }} </span>
                 </p>
                 <p>
-                  APR: <span>{{ quote.minEarnedRate }} % (${{ quote.brokerFee.toFixed(2) }})</span>
+                  APR: <span>{{ quote.minEarnedRate }} % ($ {{ quote.brokerFee.toFixed(2) }})</span>
                 </p>
                 <p>
                   Agreement duration:
@@ -244,27 +297,29 @@ onMounted(() => {
                   / per month
                 </p>
                 <p>
-                  Service Fees: <span>${{ quote.AgencyFess.toFixed(2) }}</span>
+                  Service Fees: <span>$ {{ quote.AgencyFess.toFixed(2) }}</span>
                 </p>
                 <p>
-                  Card transaction fees: <span> ${{ quote.otherFees.toFixed(2) }}</span>
+                  Card transaction fees: <span> $ {{ quote.otherFees.toFixed(2) }}</span>
                 </p>
                 <p>document</p>
               </div>
               <div class="text-right text-blue-600 mt-32">
-                <p><a href="#">Generate Agreement PDF</a></p>
-                <p><a href="#">Generate Loan Agreement PDF</a></p>
+                <p>
+                  <a href="#" @click="openPDF">Generate Agreement PDF</a>
+                </p>
+                <p><a href="#" @click="openPDF">Generate Loan Agreement PDF</a></p>
               </div>
             </div>
             <div class="flex justify-between items-center text-gray-500">
               <div>
                 <p class="text-lg text-black font-semibold">Pay In-Full</p>
-                <p>Card transaction fees: <span>$180.55</span></p>
-                <p>ACH transaction fees: <span>$0.00</span></p>
+                <p>Card transaction fees: <span>$ 180.55</span></p>
+                <p>ACH transaction fees: <span>$ 0.00</span></p>
               </div>
-              <div class="text-blue-600">
-                <p><a href="#">Request loan terms</a></p>
-              </div>
+              <!-- <div class="text-blue-600">
+                <p><a href="#" @click="openPDF">Request loan terms</a></p>
+              </div> -->
             </div>
           </div>
 
@@ -426,7 +481,7 @@ onMounted(() => {
                     {{ quote.policyNumber }} {{ quote.coverage }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${{ quote.totalCost.toFixed(2) }}
+                    $ {{ quote.totalCost.toFixed(2) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Payment Due</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -587,12 +642,15 @@ onMounted(() => {
                   {{ quote.policyNumber }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ quote.totalCost.toFixed(2) }}
+                  $ {{ quote.totalCost.toFixed(2) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {{ quote.wholesaler }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">...</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ quote.effectiveDate.toLocaleDateString() }} -
+                  {{ quote.expirationDate.toLocaleDateString() }}
+                </td>
               </tr>
             </tbody>
           </table>

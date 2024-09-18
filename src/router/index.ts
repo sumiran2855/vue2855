@@ -13,8 +13,8 @@ import Accounting from '../views/Accounting.vue'
 import Administration from '../views/admin/Administration.vue'
 import addWholesaler from '../views/wholesaler/addNew.vue'
 import ShowAgreement from '../views/Create/ViewAgreement.vue'
-
-
+import AgreementPDF from '../views/Templates/agreementPDF.vue'
+import LoanTerm from '../views/Templates/loadTerm.vue'
 const routes = [
   {
     path: '/',
@@ -88,6 +88,16 @@ const routes = [
     path: `/agreement/:agreementId`,
     name: 'ShowAgreement',
     component: ShowAgreement
+  },
+  {
+    path: `/agreementPdf`,
+    name: 'AgreementPDF',
+    component: AgreementPDF
+  },
+  {
+    path: `/loanTerm`,
+    name: 'LoanTerm',
+    component: LoanTerm
   }
 ]
 

@@ -7,6 +7,8 @@ const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const businessName = ref('')
+const countryCode= ref('+91')
+const countryCode2= ref('+91')
 const phone = ref('')
 const website = ref('')
 const streetAddress = ref('')
@@ -57,7 +59,7 @@ const handleSubmit = async () => {
       password: password.value,
       confirmPassword: confirmPassword.value,
       businessName: businessName.value,
-      phone: phone.value,
+      phone: countryCode.value + phone.value,
       website: website.value,
       streetAddress: streetAddress.value,
       streetAddress2: streetAddress2.value,
@@ -66,7 +68,7 @@ const handleSubmit = async () => {
       zipCode: zipCode.value,
       firstName: firstName.value,
       lastName: lastName.value,
-      ownerPhone: ownerPhone.value
+      ownerPhone: countryCode2.value + ownerPhone.value
     })
     console.log('Registration successful:', response.data)
     localStorage.setItem('email', email.value)
@@ -106,12 +108,19 @@ const handleSubmit = async () => {
         placeholder="Company Name"
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm"
       />
+      <div class="flex">
+      <select v-model="countryCode" class="block w-20 px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm">
+        <option value="+1">+1 </option>
+        <option value="+44">+44 </option>
+        <option value="+91">+91 </option>
+      </select>
       <input
         v-model="phone"
         type="text"
         placeholder="Mobile Number"
-        class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm"
+        class="block w-full px-4 py-2 mb-4 ml-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm"
       />
+    </div>
       <input
         v-model="website"
         type="text"
@@ -183,12 +192,18 @@ const handleSubmit = async () => {
         placeholder="Confirm Password"
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm"
       />
+      <div class="flex">
+      <select v-model="countryCode" class="block w-20 px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm">
+        <option value="+1">+1 </option>
+        <option value="+44">+44 </option>
+        <option value="+91">+91 </option>
+      </select>
       <input
         v-model="ownerPhone"
         type="text"
         placeholder="Phone Number"
         class="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm"
-      />
+      /></div>
       <label class="flex items-center mb-4">
         <input
           v-model="termsAccepted"

@@ -4,8 +4,7 @@ import Navbar from '../navbar.vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { jwtDecode } from 'jwt-decode'
-import { fetchAgreement } from '../../components/agreementService'
-import { title } from 'process'
+import { fetchAgreement, fetchEmail } from '../../components/agreementService'
 
 const isAutocompleteComplete = ref(false)
 const router = useRouter()
@@ -16,20 +15,16 @@ const showDelegateForm = computed(() => radioSelection.value === 'Yes')
 const files = ref<Array<File | null>>([null])
 const currentStep = ref(0)
 const agreementData = ref<Agreement[]>([])
-
-const emails = ref([{ title: '' }])
-const handleChange = (newValue) => {
-  if (typeof newValue === 'string') {
-    const existingEmail = emails.value.find((email) => email.title === newValue)
-    if (!existingEmail) {
-      emails.value.push({ title: newValue })
-      isAutocompleteComplete.value = false
-    } else {
-      isAutocompleteComplete.value = false
-    }
-    Add1.value.email = newValue
-  }
-}
+const Rules = [(v) => !!v || 'field is required to fill']
+const index = ref(0)
+const effectiveDateError = ref('')
+const expirationDateError = ref('')
+const contactError = ref('')
+const premiumError = ref('')
+const zipcodeError = ref('')
+const zipcodeError2 = ref('')
+const emails = ref<Array<{ title: string }>>([]) 
+const selectedAgreement = ref<Agreement | null>(null)
 
 interface Business {
   id: number
@@ -48,8 +43,8 @@ interface Quote {
   carrierCompany: string
   wholesaler: string
   coverage: string
-  effectiveDate: Date
-  expirationDate: Date
+  effectiveDate: Date | null
+  expirationDate: Date | null
   minDaysToCancel: number
   minEarnedRate: number
   premium: number
@@ -81,9 +76,9 @@ const Add1 = ref({
   firstname: '',
   lastname: '',
   email: '',
-  contact: '',
   selectedCountryCode: '+91',
   selectedCountryCode2: '+91',
+  contact: '',
   Address: '',
   city: '',
   state: '',
@@ -154,7 +149,7 @@ const quotes = ref<
     coverage: '',
     effectiveDate: null,
     expirationDate: null,
-    minDaysToCancel: 0,
+    minDaysToCancel: 10,
     minEarnedRate: 0,
     premium: 0,
     taxes: 0,
@@ -190,6 +185,151 @@ const addNewFile = () => {
   })
 }
 
+
+
+const handleChange = async (newValue: string) => {
+  if (typeof newValue === 'string') {
+    const existingEmail = emails.value.find((email) => email.title === newValue)
+    if (existingEmail) {
+      const agreement = agreementData.value.find(
+        (agreement) => agreement.email === newValue
+      )
+      if (agreement) {
+        selectedAgreement.value = agreement
+       
+        currentStep.value = 2
+        autoFillAgreementData(agreement)
+       
+        return
+      }
+    }
+    Add1.value.email = newValue
+  }
+}
+
+const autoFillAgreementData = (agreement: Agreement) => {
+  Add1.value = {
+    firstname: agreement.firstname,
+    lastname: agreement.lastname,
+    email: agreement.email,
+    selectedCountryCode: '+91',
+    selectedCountryCode2: '+91',
+    contact: agreement.contact,
+    Address: agreement.Address,
+    city: agreement.city,
+    state: agreement.state,
+    zipcode: agreement.zipcode,
+    delegateEmail: '',
+    delegateFirstname: '',
+    delegateLastname: '',
+    delegateContact: ''
+  }
+
+  customerType.value = agreement.customerType
+
+  Add2.value = agreement.businesses.map((business) => ({
+    Buisness: business.Buisness,
+    Address: business.Address,
+    Address2: business.Address2,
+    city: business.city,
+    state: business.state,
+    Zip: business.Zip
+  }))
+
+  // quotes.value = agreement.quotes.map((quote) => ({
+  //   quoteNumber: quote.quoteNumber,
+  //   policyNumber: quote.policyNumber,
+  //   carrierCompany: quote.carrierCompany,
+  //   wholesaler: quote.wholesaler,
+  //   coverage: quote.coverage,
+  //   effectiveDate: quote.effectiveDate,
+  //   expirationDate: quote.expirationDate,
+  //   minDaysToCancel: quote.minDaysToCancel,
+  //   minEarnedRate: quote.minEarnedRate,
+  //   premium: quote.premium,
+  //   taxes: quote.taxes,
+  //   otherFees: quote.otherFees,
+  //   brokerFee: quote.brokerFee,
+  //   policyFee: quote.policyFee,
+  //   commission: quote.commission,
+  //   AgencyFess: quote.AgencyFess,
+  //   totalCost: quote.totalCost
+  // }))
+}
+
+const premium = computed(() => quotes.value[index.value].premium)
+const Zipcode = computed(() => Add1.value.zipcode)
+const zip = computed(() => Add2.value[index.value].Zip)
+
+watch(premium, (newPremium) => {
+  if (newPremium < 250) {
+    premiumError.value = 'Premium must be more than $250'
+  } else {
+    premiumError.value = ''
+  }
+})
+
+watch(Zipcode, (newPremium) => {
+  if (newPremium.length !== 5) {
+    zipcodeError.value = 'Zipcode must be atleast of 5'
+  } else {
+    zipcodeError.value = ''
+  }
+})
+
+watch(zip, (newPremium) => {
+  if (newPremium.length !== 5) {
+    zipcodeError2.value = 'Zipcode must be atleast of 5'
+  } else {
+    zipcodeError2.value = ''
+  }
+})
+
+const effectiveDate = computed(() => quotes.value[index.value].effectiveDate)
+const expirationDate = computed(() => quotes.value[index.value].expirationDate)
+
+watch(effectiveDate, (newEffectiveDate: Date | null) => {
+  validateDates(newEffectiveDate, expirationDate.value)
+})
+
+watch(expirationDate, (newExpirationDate: Date | null) => {
+  validateDates(effectiveDate.value, newExpirationDate)
+})
+
+function validateDates(effectiveDate: Date | null, expirationDate: Date | null) {
+  effectiveDateError.value = ''
+  expirationDateError.value = ''
+
+  if (!effectiveDate || !expirationDate) {
+    return
+  }
+
+  const effective = new Date(effectiveDate)
+  const expiration = new Date(expirationDate)
+
+  if (isNaN(effective.getTime())) {
+    effectiveDateError.value = 'Invalid effective date'
+    return
+  }
+
+  if (isNaN(expiration.getTime())) {
+    expirationDateError.value = 'Invalid expiration date'
+    return
+  }
+
+  if (expiration <= effective) {
+    expirationDateError.value = 'Expiration date must be after effective date'
+    return
+  }
+
+  const sixMonthsLater = new Date(effective)
+  sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6)
+
+  if (expiration < sixMonthsLater) {
+    expirationDateError.value = 'Expiration date must be at least 6 months after the effective date'
+  }
+}
+
 const removeBusiness = (index: number) => {
   if (Add2.value.length > 1) {
     Add2.value.splice(index, 1)
@@ -212,8 +352,6 @@ watch(
     }
   }
 )
-
-const contactError = ref('')
 
 watch(
   () => Add1.value.contact,
@@ -332,72 +470,6 @@ const totalCostsPerQuote = computed(() => {
   })
 })
 
-// const submitData = async () => {
-//   try {
-//     const token = localStorage.getItem('access_token')
-//     if (!token) {
-//       redirectToLogin()
-//       return
-//     }
-//     const decodedToken = jwtDecode(token)
-//     const userId = decodedToken.sub
-
-//     const quotesWithTotalCost = quotes.value.map((quote) => {
-//       const premium = !isNaN(Number(quote.premium)) ? Number(quote.premium) : 0
-//       const taxes = !isNaN(Number(quote.taxes)) ? Number(quote.taxes) : 0
-//       const otherFees = !isNaN(Number(quote.otherFees)) ? Number(quote.otherFees) : 0
-//       const brokerFee = !isNaN(Number(quote.brokerFee)) ? Number(quote.brokerFee) : 0
-//       const policyFee = !isNaN(Number(quote.policyFee)) ? Number(quote.policyFee) : 0
-//       const commissionRate = !isNaN(Number(quote.minEarnedRate)) ? Number(quote.minEarnedRate) : 0
-//       const commission = premium * (commissionRate / 100)
-//       const agencyFees = !isNaN(Number(quote.AgencyFess)) ? Number(quote.AgencyFess) : 0
-
-//       const totalCost =
-//         premium + taxes + otherFees + brokerFee + policyFee + commission + agencyFees
-
-//       console.log(`Calculated total cost for quote ${quote.quoteNumber}:`, totalCost)
-
-//       return {
-//         ...quote,
-//         effectiveDate: quote.effectiveDate ? new Date(quote.effectiveDate).toISOString() : null,
-//         expirationDate: quote.expirationDate ? new Date(quote.expirationDate).toISOString() : null,
-//         totalCost
-//       }
-//     })
-
-//     const requestPayload = {
-//       firstname: Add1.value.firstname,
-//       lastname: Add1.value.lastname,
-//       email: Add1.value.email,
-//       contact: Add1.value.contact,
-//       Address: Add1.value.Address,
-//       city: Add1.value.city,
-//       state: Add1.value.state,
-//       zipcode: Add1.value.zipcode,
-//       delegateEmail: Add1.value.delegateEmail,
-//       delegateFirstname: Add1.value.delegateFirstname,
-//       delegateLastname: Add1.value.delegateLastname,
-//       delegateContact: Add1.value.delegateContact,
-//       customerType: customerType.value,
-//       businesses: Add2.value,
-//       quotes: quotesWithTotalCost,
-//       userId
-//     }
-
-//     console.log('Final Request Payload:', JSON.stringify(requestPayload, null, 2))
-//     await axios.post('http://localhost:3000/agreement/create', requestPayload)
-
-//     await fetchAgreement(agreementData)
-
-//     alert('Data saved successfully!')
-//     router.push('/agreement/id')
-//   } catch (error) {
-//     console.error('Error saving data:', error)
-//     alert('Error saving data. Please check the console for more details.')
-//   }
-// }
-
-
 const submitData = async () => {
   try {
     const token = localStorage.getItem('access_token')
@@ -433,7 +505,7 @@ const submitData = async () => {
       firstname: Add1.value.firstname,
       lastname: Add1.value.lastname,
       email: Add1.value.email,
-      contact: Add1.value.contact,
+      contact: Add1.value.selectedCountryCode + Add1.value.contact,
       Address: Add1.value.Address,
       city: Add1.value.city,
       state: Add1.value.state,
@@ -441,7 +513,7 @@ const submitData = async () => {
       delegateEmail: Add1.value.delegateEmail,
       delegateFirstname: Add1.value.delegateFirstname,
       delegateLastname: Add1.value.delegateLastname,
-      delegateContact: Add1.value.delegateContact,
+      delegateContact: Add1.value.selectedCountryCode2 + Add1.value.delegateContact,
       customerType: customerType.value,
       businesses: Add2.value,
       quotes: quotesWithTotalCost,
@@ -451,15 +523,14 @@ const submitData = async () => {
     console.log('Final Request Payload:', JSON.stringify(requestPayload, null, 2))
     const response = await axios.post('http://localhost:3000/agreement/create', requestPayload)
 
-    if (response.status === 201) { // Assuming 201 status for successful creation
-      const newAgreement = response.data // Assuming the backend returns the created agreement
+    if (response.status === 201) {
+      const newAgreement = response.data
       console.log('New Agreement:', JSON.stringify(newAgreement, null, 2))
 
-      // Now fetch the latest agreement and display it in the view
       await fetchAgreement(agreementData)
-      
+
       alert('Data saved successfully!')
-      router.push(`/agreement/${newAgreement.id}`) // Redirect to the newly created agreement page
+      router.push(`/agreement/${newAgreement.id}`)
     } else {
       throw new Error('Failed to create agreement')
     }
@@ -468,6 +539,11 @@ const submitData = async () => {
     alert('Error saving data. Please check the console for more details.')
   }
 }
+
+onMounted(async() => {
+  await fetchAgreement(agreementData)
+  await fetchEmail(agreementData,emails)
+})
 
 </script>
 
@@ -507,6 +583,7 @@ const submitData = async () => {
                   hide-details
                   required
                   variant="outlined"
+                  :rules="Rules"
                 ></v-text-field>
               </v-col>
 
@@ -518,6 +595,7 @@ const submitData = async () => {
                   hide-details
                   required
                   variant="outlined"
+                  :rules="Rules"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -530,6 +608,7 @@ const submitData = async () => {
                   hide-details
                   required
                   variant="outlined"
+                  :rules="Rules"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -542,6 +621,7 @@ const submitData = async () => {
                   hide-details
                   required
                   variant="outlined"
+                  :rules="Rules"
                 ></v-text-field>
               </v-col>
               <v-col>
@@ -552,6 +632,7 @@ const submitData = async () => {
                   hide-details
                   required
                   variant="outlined"
+                  :rules="Rules"
                 ></v-text-field>
               </v-col>
               <v-col>
@@ -562,6 +643,8 @@ const submitData = async () => {
                   hide-details
                   required
                   variant="outlined"
+                  :error="zipcodeError !== ''"
+                  :error-messages="zipcodeError"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -587,6 +670,7 @@ const submitData = async () => {
                   hide-details
                   required
                   variant="outlined"
+                  :rules="Rules"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -614,6 +698,7 @@ const submitData = async () => {
                       hide-details
                       required
                       variant="outlined"
+                      :rules="Rules"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -626,6 +711,7 @@ const submitData = async () => {
                       hide-details
                       required
                       variant="outlined"
+                      :rules="Rules"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -650,6 +736,7 @@ const submitData = async () => {
                       hide-details
                       required
                       variant="outlined"
+                      :rules="Rules"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" md="4">
@@ -660,6 +747,7 @@ const submitData = async () => {
                       hide-details
                       required
                       variant="outlined"
+                      :rules="Rules"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" md="4">
@@ -670,6 +758,8 @@ const submitData = async () => {
                       hide-details
                       required
                       variant="outlined"
+                      :error="zipcodeError2 !== ''"
+                      :error-messages="zipcodeError2"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -712,6 +802,7 @@ const submitData = async () => {
                     hide-details
                     required
                     variant="outlined"
+                    :rules="Rules"
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -724,6 +815,7 @@ const submitData = async () => {
                     hide-details
                     required
                     variant="outlined"
+                    :rules="Rules"
                   ></v-text-field>
                 </v-col>
                 <v-col>
@@ -734,6 +826,7 @@ const submitData = async () => {
                     hide-details
                     required
                     variant="outlined"
+                    :rules="Rules"
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -759,6 +852,7 @@ const submitData = async () => {
                     hide-details
                     required
                     variant="outlined"
+                    :rules="Rules"
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -860,6 +954,7 @@ const submitData = async () => {
                           type="date"
                           variant="outlined"
                           class="mb-4"
+                          :error-messages="effectiveDateError"
                         ></v-text-field></v-col
                       ><v-col cols="12" md="6">
                         <v-text-field
@@ -868,6 +963,7 @@ const submitData = async () => {
                           type="date"
                           variant="outlined"
                           class="mb-4"
+                          :error-messages="expirationDateError"
                         ></v-text-field></v-col
                     ></v-row>
                     <h3 class="my-5 font-semibold">Provided by carrier</h3>
@@ -898,6 +994,8 @@ const submitData = async () => {
                           prefix="$"
                           variant="outlined"
                           class="mb-4"
+                          :error="premiumError !== ''"
+                          :error-messages="premiumError"
                         ></v-text-field></v-col
                       ><v-col cols="12" md="6">
                         <v-text-field
